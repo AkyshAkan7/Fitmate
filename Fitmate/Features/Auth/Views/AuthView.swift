@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct AuthView: View {
+    @EnvironmentObject private var authManager: AuthManager
+
     var body: some View {
         ZStack {
             Color.white
@@ -19,11 +21,11 @@ struct AuthView: View {
                 // Sign in buttons
                 VStack(spacing: 12) {
                     SocialSignInButton(type: .apple) {
-
+                        authManager.signIn()
                     }
 
                     SocialSignInButton(type: .google) {
-
+                        authManager.signIn()
                     }
                 }
                 .padding(.horizontal, 16)
@@ -53,10 +55,9 @@ struct LogoView: View {
                 .frame(height: 24)
 
             Text("Помогу следить\nза прогрессом силовых")
-                .font(.system(size: 16))
+                .body15Regular()
                 .foregroundColor(.appGray)
                 .multilineTextAlignment(.center)
-                .lineSpacing(4)
         }
     }
 }
@@ -78,7 +79,7 @@ struct BackgroundIllustration: View {
 struct TermsView: View {
     var body: some View {
         Text(termsText)
-            .font(.system(size: 12))
+            .body11Regular()
             .multilineTextAlignment(.center)
     }
 
@@ -103,4 +104,5 @@ struct TermsView: View {
 
 #Preview {
     AuthView()
+        .environmentObject(AuthManager())
 }

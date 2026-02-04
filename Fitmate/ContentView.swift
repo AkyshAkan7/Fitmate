@@ -8,11 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var authManager: AuthManager
+    
     var body: some View {
-        AuthView()
+        ZStack {
+            if authManager.isAuthenticated {
+                HomeView().transition(.push(from: .bottom))
+            } else {
+                AuthView().transition(.push(from: .top))
+            }
+        }
+        .animation(.default, value: authManager.isAuthenticated)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AuthManager())
 }
