@@ -11,5 +11,8 @@ extension Color {
         )
     }
 
+    static let appBlack = Color(hex: 0x222222)
     static let appGray = Color(hex: 0x222222, opacity: 0.52)
+    static let lightGray = Color(hex: 0xF5F5F5)
+    static let yellow = Color(hex: 0xEBFD6A)
 }

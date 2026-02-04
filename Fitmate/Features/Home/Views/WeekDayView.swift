@@ -40,7 +40,7 @@ struct WeekDayView: View {
                 VStack(spacing: 2) {
                     Text(weekDays[index])
                         .body13Medium()
-                        .foregroundColor(isToday ? .primary : .appGray)
+                        .foregroundColor(.appGray)
 
                     if let imageName = status.imageName {
                         Image(imageName)
@@ -80,7 +80,7 @@ struct WeekDayView: View {
     VStack(spacing: 20) {
         WeekDayView()
 
-        WeekDayView(dayStatuses: [.green, .green, .red, .yellow, .none, .none, .none])
+        WeekDayView(dayStatuses: [.green, .red, .yellow, .none, .none, .none, .none])
     }
     .padding(.horizontal, 16)
 }
