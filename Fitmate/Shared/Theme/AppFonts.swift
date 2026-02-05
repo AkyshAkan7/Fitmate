@@ -19,6 +19,7 @@ extension Font {
     static let headline20Medium = Font.system(size: 20, weight: .medium)
     static let headline24Medium = Font.system(size: 24, weight: .medium)
     static let headline24Bold = Font.system(size: 24, weight: .bold)
+    static let headline24Semibold = Font.system(size: 24, weight: .semibold)
 
     // MARK: - Body
 
@@ -70,6 +71,10 @@ extension View {
 
     func headline24Bold() -> some View {
         modifier(Typography(font: .headline24Bold, lineHeight: 32, fontSize: 24))
+    }
+    
+    func headline24Semibold() -> some View {
+        modifier(Typography(font: .headline24Semibold, lineHeight: 32, fontSize: 24))
     }
 
     // MARK: - Body

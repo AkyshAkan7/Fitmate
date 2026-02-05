@@ -10,6 +10,8 @@ import SwiftUI
 enum AppButtonType {
     case primary
     case secondary
+    case text
+    case destructive
 }
 
 struct AppButton: View {
@@ -39,6 +41,8 @@ struct AppButton: View {
             return .appBlack
         case .secondary:
             return .lightGray
+        case .text, .destructive:
+            return .clear
         }
     }
 
@@ -48,6 +52,10 @@ struct AppButton: View {
             return isEnabled ? .white : .white.opacity(0.35)
         case .secondary:
             return isEnabled ? .appBlack : .appBlack.opacity(0.35)
+        case .text:
+            return isEnabled ? .appBlack : .appGray
+        case .destructive:
+            return isEnabled ? .red : .red.opacity(0.35)
         }
     }
 }
@@ -58,6 +66,8 @@ struct AppButton: View {
         AppButton(title: "Сохранить", type: .primary, isEnabled: false) { }
         AppButton(title: "Сохранить", type: .secondary, isEnabled: true) { }
         AppButton(title: "Сохранить", type: .secondary, isEnabled: false) { }
+        AppButton(title: "Подробнее", type: .text, isEnabled: true) { }
+        AppButton(title: "Удалить аккаунт", type: .destructive, isEnabled: true) { }
     }
     .padding(.horizontal, 16)
 }
