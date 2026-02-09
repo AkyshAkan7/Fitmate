@@ -9,10 +9,8 @@ import SwiftUI
 
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var languageManager: LanguageManager
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedLanguage = "Русский"
-
-    private let languages = ["Русский", "English"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,9 +46,12 @@ struct ProfileView: View {
                                 .body17Semibold()
 
                             AppChipGroup(
-                                items: languages,
-                                selected: $selectedLanguage,
-                                titleFor: { $0 }
+                                items: AppLanguage.allCases,
+                                selected: Binding(
+                                    get: { languageManager.currentLanguage },
+                                    set: { languageManager.setLanguage($0) }
+                                ),
+                                titleFor: { $0.displayName }
                             )
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -81,5 +82,6 @@ struct ProfileView: View {
     NavigationStack {
         ProfileView()
             .environmentObject(AuthManager())
+            .environmentObject(LanguageManager())
     }
 }

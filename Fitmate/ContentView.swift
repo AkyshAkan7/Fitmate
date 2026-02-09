@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var languageManager: LanguageManager
     
     var body: some View {
         ZStack {
@@ -19,6 +20,7 @@ struct ContentView: View {
             }
         }
         .animation(.default, value: authManager.isAuthenticated)
+        .environment(\.locale, Locale(identifier: languageManager.currentLanguage.id))
     }
 }
 

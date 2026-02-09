@@ -9,4 +9,5 @@ import Foundation
 
 enum StorageKeys {
     static let isAIBannerHidden = "isAIBannerHidden"
+    static let appLanguage = "appLanguage"
 }
