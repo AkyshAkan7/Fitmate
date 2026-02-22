@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
+    @State private var showQuickStart = false
 
     var body: some View {
         NavigationStack {
@@ -84,7 +85,7 @@ struct HomeView: View {
                         .padding(.top, 24)
                         
                         AppButton(title: "Быстрый старт", type: .secondary) {
-                            print("tapped")
+                            showQuickStart = true
                         }
                         .padding(.top, 24)
                     }
@@ -93,6 +94,9 @@ struct HomeView: View {
             }
             .background(Color.clear)
             .navigationBarHidden(true)
+            .navigationDestination(isPresented: $showQuickStart) {
+                QuickStartView()
+            }
         }
     }
 }

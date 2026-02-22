@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct MainAppView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var languageManager: LanguageManager
     
@@ -25,6 +25,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MainAppView()
         .environmentObject(AuthManager())
+        .environmentObject(LanguageManager())
 }
