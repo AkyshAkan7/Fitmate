@@ -26,7 +26,7 @@ struct AppCell: View {
     var value: String? = nil
     var subvalue: String? = nil
     var isReverse: Bool = false
-    var trailingIcon: AppCellTrailingIcon = .chevron
+    var trailingIcon: AppCellTrailingIcon? = .chevron
     var action: (() -> Void)? = nil
 
     var body: some View {
@@ -69,8 +69,10 @@ struct AppCell: View {
                 }
 
                 // Trailing Icon
-                trailingIconView
-                    .frame(width: 24, height: 24)
+                if trailingIcon != nil {
+                    trailingIconView
+                        .frame(width: 24, height: 24)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -82,9 +84,11 @@ struct AppCell: View {
 
     @ViewBuilder
     private var trailingIconView: some View {
-        Image(trailingIcon.name)
-            .renderingMode(.template)
-            .foregroundStyle(Color.appGray)
+        if let trailingIcon {
+            Image(trailingIcon.name)
+                .renderingMode(.template)
+                .foregroundStyle(Color.appGray)
+        }
     }
 
     @ViewBuilder

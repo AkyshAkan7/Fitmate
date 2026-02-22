@@ -14,6 +14,31 @@ struct ProfileView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Navigation Bar
+            navigationBar
+
+            // Content
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        subscriptionSection
+                        languageSelector
+                        Spacer()
+                        actionButtons
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
+                    .frame(minHeight: geometry.size.height)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+
+    // MARK: - Navigation Bar
+
+    private var navigationBar: some View {
+        VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
                 Button {
                     dismiss()
@@ -31,50 +56,49 @@ struct ProfileView: View {
             .padding(.vertical, 12)
 
             Divider()
-            
-            GeometryReader { geometry in
-                ScrollView {
-                    VStack(spacing: 24) {
-                        SubscriptionCardView(
-                            planName: "3 месяца",
-                            nextBillingDate: "24.12.2026"
-                        )
+        }
+    }
 
-                        // Language selector
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Язык интерфейса")
-                                .body17Semibold()
+    // MARK: - Subscription Section
 
-                            AppChipGroup(
-                                items: AppLanguage.allCases,
-                                selected: Binding(
-                                    get: { languageManager.currentLanguage },
-                                    set: { languageManager.setLanguage($0) }
-                                ),
-                                titleFor: { $0.displayName }
-                            )
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+    private var subscriptionSection: some View {
+        SubscriptionCardView(
+            planName: "3 месяца",
+            nextBillingDate: "24.12.2026"
+        )
+    }
 
-                        Spacer()
+    // MARK: - Language Selector
 
-                        VStack(spacing: 8) {
-                            AppButton(title: "Выйти из аккаунта", type: .secondary) {
-                                authManager.signOut()
-                            }
+    private var languageSelector: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Язык интерфейса")
+                .body17Semibold()
 
-                            AppButton(title: "Удалить аккаунт", type: .destructive) {
-                                // TODO: Delete account
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
-                    .frame(minHeight: geometry.size.height)
-                }
+            AppChipGroup(
+                items: AppLanguage.allCases,
+                selected: Binding(
+                    get: { languageManager.currentLanguage },
+                    set: { languageManager.setLanguage($0) }
+                ),
+                titleFor: { $0.displayName }
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Action Buttons
+
+    private var actionButtons: some View {
+        VStack(spacing: 8) {
+            AppButton(title: "Выйти из аккаунта", type: .secondary) {
+                authManager.signOut()
+            }
+
+            AppButton(title: "Удалить аккаунт", type: .destructive) {
+                // TODO: Delete account
             }
         }
-        .navigationBarHidden(true)
     }
 }
 

@@ -9,11 +9,11 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @EnvironmentObject private var router: Router
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
-    @State private var showQuickStart = false
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $router.path) {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 0) {
@@ -26,8 +26,8 @@ struct HomeView: View {
 
                         Spacer()
 
-                        NavigationLink {
-                            ProfileView()
+                        Button {
+                            router.navigate(to: .profile)
                         } label: {
                             HStack(spacing: 4) {
                                 Text("Профиль")
@@ -85,7 +85,7 @@ struct HomeView: View {
                         .padding(.top, 24)
                         
                         AppButton(title: "Быстрый старт", type: .secondary) {
-                            showQuickStart = true
+                            router.navigate(to: .quickStart)
                         }
                         .padding(.top, 24)
                     }
@@ -94,8 +94,17 @@ struct HomeView: View {
             }
             .background(Color.clear)
             .navigationBarHidden(true)
-            .navigationDestination(isPresented: $showQuickStart) {
-                QuickStartView()
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .profile:
+                    ProfileView()
+                case .quickStart:
+                    QuickStartView()
+                case .workoutConfirm(let exercises):
+                    WorkoutConfirmView(exercises: exercises)
+                case .createTemplate:
+                    EmptyView() // TODO: Add CreateTemplateView
+                }
             }
         }
     }
@@ -104,4 +113,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environmentObject(AuthManager())
+        .environmentObject(Router())
 }

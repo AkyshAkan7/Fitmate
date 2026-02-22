@@ -28,4 +28,5 @@ struct MainAppView: View {
     MainAppView()
         .environmentObject(AuthManager())
         .environmentObject(LanguageManager())
+        .environmentObject(Router())
 }

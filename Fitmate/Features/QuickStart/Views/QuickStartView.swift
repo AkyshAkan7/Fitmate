@@ -7,29 +7,11 @@
 
 import SwiftUI
 
-// MARK: - Muscle Group
-
-enum MuscleGroup: String, CaseIterable, Hashable {
-    case chest = "Грудь"
-    case back = "Спина"
-    case arms = "Руки"
-    case legs = "Ноги"
-    case shoulders = "Плечи"
-}
-
-// MARK: - Exercise Model
-
-struct Exercise: Identifiable, Hashable {
-    let id = UUID()
-    let name: String
-    let subtitle: String
-    let muscleGroup: MuscleGroup
-}
-
 // MARK: - QuickStartView
 
 struct QuickStartView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var router: Router
 
     @State private var selectedMuscleGroup: MuscleGroup = .chest
     @State private var selectedExercises: Set<UUID> = []
@@ -159,8 +141,9 @@ struct QuickStartView: View {
     // MARK: - Bottom Button
 
     private var bottomButton: some View {
-        AppButton(title: "Готово") {
-            // Handle done action
+        AppButton(title: "Готово", isEnabled: !selectedExercises.isEmpty) {
+            let selected = exercises.filter { selectedExercises.contains($0.id) }
+            router.navigate(to: .workoutConfirm(exercises: selected))
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
@@ -169,4 +152,5 @@ struct QuickStartView: View {
 
 #Preview {
     QuickStartView()
+        .environmentObject(Router())
 }
