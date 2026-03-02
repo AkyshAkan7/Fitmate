@@ -10,11 +10,31 @@ import SwiftUI
 struct MainAppView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var languageManager: LanguageManager
+    @EnvironmentObject private var router: Router
     
     var body: some View {
         ZStack {
             if authManager.isAuthenticated {
-                HomeView().transition(.push(from: .bottom))
+                NavigationStack(path: $router.path) {
+                    HomeView()
+                        .navigationDestination(for: Route.self) { route in
+                            switch route {
+                            case .profile:
+                                ProfileView()
+                            case .quickStart:
+                                QuickStartView()
+                            case .workoutConfirm(let exercises):
+                                WorkoutConfirmView(exercises: exercises)
+                            case .workoutSession(let exercises):
+                                WorkoutSessionView(exercises: exercises)
+                            case .workoutComplete:
+                                WorkoutCompleteView()
+                            case .createTemplate:
+                                EmptyView() // TODO: Add CreateTemplateView
+                            }
+                        }
+                }
+                .transition(.push(from: .bottom))
             } else {
                 AuthView().transition(.push(from: .top))
             }

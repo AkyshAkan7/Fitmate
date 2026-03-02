@@ -7,20 +7,24 @@
 
 import SwiftUI
 
+// MARK: - Constants
+
+private enum Layout {
+    static let navBarHeight: CGFloat = 100
+    static let topPadding: CGFloat = 16
+    static let cellHeight: CGFloat = 64
+    static let maxTipCellCount = 5
+}
+
+// MARK: - WorkoutConfirmView
+
 struct WorkoutConfirmView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var router: Router
     @AppStorage(StorageKeys.hasSeenReorderTip) private var hasSeenReorderTip = false
 
     @State private var exercises: [Exercise]
     @State private var showTip = false
-
-    // MARK: - Constants
-
-    private enum Layout {
-        static let navBarHeight: CGFloat = 100
-        static let topPadding: CGFloat = 16
-        static let cellHeight: CGFloat = 64
-    }
 
     init(exercises: [Exercise]) {
         _exercises = State(initialValue: exercises)
@@ -31,9 +35,12 @@ struct WorkoutConfirmView: View {
     private var shouldShowTip: Bool {
         showTip && !hasSeenReorderTip
     }
-
+    
+    /// Позиция tip под последней ячейкой.
+    /// Если ячеек больше 5 - показывается под 5-й ячейкой.
     private var tipYPosition: CGFloat {
-        Layout.navBarHeight + Layout.topPadding + CGFloat(exercises.count) * Layout.cellHeight
+        let cellCount = min(exercises.count, Layout.maxTipCellCount)
+        return Layout.navBarHeight + Layout.topPadding + CGFloat(cellCount) * Layout.cellHeight
     }
 
     // MARK: - Actions
@@ -146,7 +153,7 @@ struct WorkoutConfirmView: View {
             }
 
             AppButton(title: "Начать") {
-                // TODO: Start workout
+                router.navigate(to: .workoutSession(exercises: exercises))
             }
         }
         .padding(.horizontal, 16)

@@ -7,26 +7,14 @@
 
 import SwiftUI
 
-enum AppCellTrailingIcon {
-    case chevron
-    case drag
-
-    var name: String {
-        switch self {
-        case .chevron: return "chevronRight"
-        case .drag: return "drag"
-        }
-    }
-}
-
 struct AppCell: View {
-    let icon: Image
+    var icon: Image? = nil
     let title: String
     var subtitle: String? = nil
     var value: String? = nil
     var subvalue: String? = nil
     var isReverse: Bool = false
-    var trailingIcon: AppCellTrailingIcon? = .chevron
+    var trailingIcon: Image? = Image("chevronRight")
     var action: (() -> Void)? = nil
 
     var body: some View {
@@ -35,12 +23,14 @@ struct AppCell: View {
         } label: {
             HStack(spacing: 12) {
                 // Icon
-                icon
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 48, height: 48)
-                    .background(Color.lightGray)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                if let icon {
+                    icon
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 48, height: 48)
+                        .background(Color.lightGray)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
 
                 // Title & Subtitle
                 VStack(alignment: .leading, spacing: 2) {
@@ -69,8 +59,10 @@ struct AppCell: View {
                 }
 
                 // Trailing Icon
-                if trailingIcon != nil {
-                    trailingIconView
+                if let trailingIcon {
+                    trailingIcon
+                        .renderingMode(.template)
+                        .foregroundStyle(Color.appGray)
                         .frame(width: 24, height: 24)
                 }
             }
@@ -80,15 +72,6 @@ struct AppCell: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-    }
-
-    @ViewBuilder
-    private var trailingIconView: some View {
-        if let trailingIcon {
-            Image(trailingIcon.name)
-                .renderingMode(.template)
-                .foregroundStyle(Color.appGray)
-        }
     }
 
     @ViewBuilder
@@ -149,7 +132,14 @@ struct AppCell: View {
             icon: Image(systemName: "flame"),
             title: "Title",
             subtitle: "Subtitle",
-            trailingIcon: .drag
+            trailingIcon: Image("drag")
+        )
+
+        AppCell(
+            icon: Image(systemName: "dumbbell"),
+            title: "Title",
+            subtitle: "Subtitle",
+            trailingIcon: Image(systemName: "arrow.triangle.2.circlepath")
         )
     }
     .padding()

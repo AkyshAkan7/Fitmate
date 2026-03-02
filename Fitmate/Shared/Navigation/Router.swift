@@ -14,6 +14,8 @@ enum Route: Hashable {
     case profile
     case quickStart
     case workoutConfirm(exercises: [Exercise])
+    case workoutSession(exercises: [Exercise])
+    case workoutComplete
     case createTemplate
 }
 
