@@ -16,6 +16,7 @@ struct WorkoutSessionView: View {
     @State private var exerciseSessions: [ExerciseSession]
     @State private var selectedIndex: Int = 0
     @State private var showFinishAlert: Bool = false
+    @State private var showAddSetSheet: Bool = false
 
     init(exercises: [Exercise]) {
         let sessions = exercises.map { exercise in
@@ -43,7 +44,11 @@ struct WorkoutSessionView: View {
     }
 
     private func addSet() {
-        let newSet = WorkoutSet(weight: 0, reps: 0)
+        showAddSetSheet = true
+    }
+
+    private func addSet(weight: Double, reps: Int) {
+        let newSet = WorkoutSet(weight: weight, reps: reps)
         exerciseSessions[selectedIndex].sets.append(newSet)
     }
 
@@ -79,6 +84,13 @@ struct WorkoutSessionView: View {
             .keyboardShortcut(.defaultAction)
         } message: {
             Text("Все невыполненные упражнения не сохранятся. Точно завершить тренировку?")
+        }
+        .sheet(isPresented: $showAddSetSheet) {
+            AddSetView(setNumber: currentSession.sets.count + 1) { weight, reps in
+                addSet(weight: weight, reps: reps)
+            }
+            .presentationDetents([.height(420)])
+            .presentationDragIndicator(.visible)
         }
     }
 
