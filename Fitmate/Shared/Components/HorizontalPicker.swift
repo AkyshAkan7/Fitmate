@@ -7,113 +7,106 @@
 
 import SwiftUI
 
-struct HorizontalPickerConfig {
-    var visibleCount: Int = 5
-    var selectedFontSize: CGFloat = 42
-    var normalFontSize: CGFloat = 32
-    var alphaFactor: Double = 0.3
-}
+struct HorizontalPicker<SelectionValue, Content>: View where SelectionValue: Hashable & Sendable, Content: View {
+    @State private var scrollPosition: ScrollPosition = .init(idType: SelectionValue.self)
 
-struct HorizontalPicker<Item: Hashable>: View {
-    let items: [Item]
-    @Binding var selection: Item
-    var config: HorizontalPickerConfig = HorizontalPickerConfig()
-    let itemLabel: (Item) -> String
+    private var items: [SelectionValue]
+    private var content: (SelectionValue) -> Content
+    @Binding private var selection: SelectionValue
 
-    @GestureState private var translation: CGFloat = 0
+    private let config: Config
 
-    private var currentIndex: Int {
-        items.firstIndex(of: selection) ?? 0
+    init(
+        items: [SelectionValue],
+        selection: Binding<SelectionValue>,
+        config: Config = Config(),
+        @ViewBuilder content: @escaping (SelectionValue) -> Content
+    ) {
+        self.items = items
+        self.content = content
+        self.config = config
+        _selection = selection
+    }
+
+    struct Config {
+        var numberOfDisplays: CGFloat = 5
+        var spacing: CGFloat = 0
+        var itemSize: CGSize = .init(width: 48, height: 48)
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            let itemWidth = geometry.size.width / CGFloat(config.visibleCount)
+        GeometryReader { proxy in
+            let size = proxy.size
+            let margin = max((size.width - config.itemSize.width) / 2, 0)
 
-            ZStack {
-                HStack(spacing: 0) {
-                    ForEach(Array(items.enumerated()), id: \.element) { index, item in
-                        itemView(
-                            item: item,
-                            index: index,
-                            itemWidth: itemWidth,
-                            geometry: geometry
-                        )
+            scrollViewContent
+                .scrollTargetBehavior(.viewAligned)
+                .contentMargins(.horizontal, margin)
+                .scrollPosition($scrollPosition, anchor: .center)
+                .onAppear {
+                    scrollPosition.scrollTo(id: selection)
+                }
+                .onChange(of: scrollPosition) { _, newValue in
+                    Task { @MainActor in
+                        if let newSelection = newValue.viewID(type: SelectionValue.self) {
+                            selection = newSelection
+                        }
                     }
                 }
-                .frame(width: geometry.size.width, alignment: .leading)
-                .offset(x: calculateOffset(itemWidth: itemWidth, geometry: geometry))
-                .animation(.easeOut(duration: 0.15), value: currentIndex)
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture()
-                    .updating($translation) { value, state, _ in
-                        state = value.translation.width
-                    }
-                    .onEnded { value in
-                        let offset = value.translation.width / itemWidth
-                        let newIndex = (CGFloat(currentIndex) - offset).rounded()
-                        let clampedIndex = min(max(Int(newIndex), 0), items.count - 1)
-                        selection = items[clampedIndex]
-                    }
-            )
-            .mask {
-                LinearGradient(
-                    stops: [
-                        .init(color: .clear, location: 0),
-                        .init(color: .black, location: 0.2),
-                        .init(color: .black, location: 0.8),
-                        .init(color: .clear, location: 1)
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            }
+                .mask { maskView }
         }
     }
 
-    private func calculateOffset(itemWidth: CGFloat, geometry: GeometryProxy) -> CGFloat {
-        let baseOffset = -CGFloat(currentIndex + 1) * itemWidth
-        let centerOffset = (geometry.size.width / 2) + (itemWidth / 2)
-        return baseOffset + translation + centerOffset
+    private var scrollViewContent: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.element) { _, item in
+                    itemContent(item)
+                }
+            }
+            .scrollTargetLayout()
+        }
     }
 
-    @ViewBuilder
-    private func itemView(item: Item, index: Int, itemWidth: CGFloat, geometry: GeometryProxy) -> some View {
-        let maxRange = floor(CGFloat(config.visibleCount) / 2.0)
-        let offset = translation / itemWidth
-        let currentPosition = CGFloat(currentIndex) - offset
-        let positionGap = CGFloat(index) - currentPosition
-        let distancePercent = min(abs(positionGap / maxRange), 1.0)
+    private func itemContent(_ item: SelectionValue) -> some View {
+        content(item)
+            .frame(width: config.itemSize.width, height: config.itemSize.height)
+            .visualEffect { content, proxy in
+                let isSelected = item == selection
+                return content
+                    .opacity(isSelected ? 1.0 : 0.4)
+            }
+    }
 
-        let isCenter = abs(positionGap) < 0.5
-        let alpha = 1.0 - (Double(distancePercent) * (1.0 - config.alphaFactor))
-
-        Text(itemLabel(item))
-            .font(.system(
-                size: isCenter ? config.selectedFontSize : config.normalFontSize,
-                weight: isCenter ? .semibold : .medium
-            ))
-            .foregroundStyle(Color.appBlack.opacity(alpha))
-            .frame(width: itemWidth, height: geometry.size.height)
+    private var maskView: some View {
+        let count = Int(config.numberOfDisplays)
+        return LinearGradient(
+            colors: [.clear] + Array(repeating: .black, count: count) + [.clear],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
     }
 }
 
 #Preview {
-    @Previewable @State var selection: Int = 10
+    @Previewable @State var selection: Int = 25
 
-    VStack {
+    VStack(spacing: 20) {
         HorizontalPicker(
             items: Array(1...100),
             selection: $selection,
-            config: HorizontalPickerConfig(visibleCount: 5)
+            config: HorizontalPicker.Config(
+                numberOfDisplays: 5,
+                itemSize: .init(width: 60, height: 60)
+            )
         ) { item in
-            "\(item)"
+            Text("\(item)")
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(Color.appBlack)
         }
-        .frame(height: 70)
+        .frame(height: 80)
 
         Text("Selected: \(selection)")
     }
+    .padding()
 }

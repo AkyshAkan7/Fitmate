@@ -106,9 +106,14 @@ struct AddSetView: View {
             HorizontalPicker(
                 items: weights,
                 selection: $selectedWeight,
-                config: HorizontalPickerConfig(visibleCount: 3)
+                config: HorizontalPicker.Config(
+                    numberOfDisplays: 3,
+                    itemSize: .init(width: 100, height: 100)
+                )
             ) { weight in
-                formatWeight(weight)
+                Text(formatWeight(weight))
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(Color.appBlack)
             }
             .frame(height: 70)
         }
@@ -125,9 +130,14 @@ struct AddSetView: View {
             HorizontalPicker(
                 items: reps,
                 selection: $selectedReps,
-                config: HorizontalPickerConfig(visibleCount: 5)
+                config: HorizontalPicker.Config(
+                    numberOfDisplays: 3,
+                    itemSize: .init(width: 60, height: 60)
+                )
             ) { rep in
-                "\(rep)"
+                Text("\(rep)")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(Color.appBlack)
             }
             .frame(height: 70)
         }
