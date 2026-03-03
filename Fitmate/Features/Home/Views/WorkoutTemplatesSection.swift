@@ -10,7 +10,11 @@ import SwiftUI
 struct WorkoutTemplate: Identifiable {
     let id = UUID()
     let name: String
-    let exerciseCount: Int
+    let exercises: [Exercise]
+
+    var exerciseCount: Int {
+        exercises.count
+    }
 }
 
 struct WorkoutTemplatesSection: View {
@@ -19,7 +23,7 @@ struct WorkoutTemplatesSection: View {
     var onTemplateTap: ((WorkoutTemplate) -> Void)? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             // Header
             HStack {
                 Text("Шаблоны тренировок")
@@ -48,6 +52,7 @@ struct WorkoutTemplatesSection: View {
                             .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [4]))
                             .foregroundStyle(Color.appGray.opacity(0.5))
                     )
+                    .padding(.top, 8)
             } else {
                 // Templates list
                 VStack(spacing: 0) {
@@ -76,11 +81,6 @@ struct WorkoutTemplatesSection: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-
-                        if index < templates.count - 1 {
-                            Divider()
-                                .padding(.leading, 16)
-                        }
                     }
                 }
                 .cornerRadius(16)
@@ -93,11 +93,16 @@ struct WorkoutTemplatesSection: View {
     VStack(spacing: 32) {
         WorkoutTemplatesSection()
             .padding(.horizontal, 16)
-        
+
         WorkoutTemplatesSection(
             templates: [
-                WorkoutTemplate(name: "Грудь и бицепс", exerciseCount: 5),
-                WorkoutTemplate(name: "Спина и трицепс", exerciseCount: 4)
+                WorkoutTemplate(name: "Грудь и бицепс", exercises: [
+                    Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
+                    Exercise(name: "Жим гантелей", subtitle: "Subtitle", muscleGroup: .chest),
+                ]),
+                WorkoutTemplate(name: "Спина и трицепс", exercises: [
+                    Exercise(name: "Тяга штанги", subtitle: "Subtitle", muscleGroup: .back),
+                ])
             ]
         )
         .padding(.horizontal, 16)

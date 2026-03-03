@@ -21,8 +21,8 @@ struct MainAppView: View {
                             switch route {
                             case .profile:
                                 ProfileView()
-                            case .quickStart:
-                                QuickStartView()
+                            case .exerciseSelection(let mode):
+                                ExerciseSelectionView(mode: mode)
                             case .workoutConfirm(let exercises):
                                 WorkoutConfirmView(exercises: exercises)
                             case .workoutSession(let exercises):
@@ -31,6 +31,8 @@ struct MainAppView: View {
                                 WorkoutCompleteView()
                             case .createTemplate:
                                 CreateWorkoutTemplateView()
+                            case .confirmTemplate(let templateName, let exercises):
+                                ConfirmWorkoutTemplateView(templateName: templateName, exercises: exercises)
                             }
                         }
                 }

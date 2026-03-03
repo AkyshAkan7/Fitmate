@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var router: Router
+    @EnvironmentObject private var templateStore: TemplateStore
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
     
     var body: some View {
@@ -78,13 +79,16 @@ struct HomeView: View {
                         .padding(.top, 16)
                     }
                     
-                    WorkoutTemplatesSection {
-                        router.navigate(to: .createTemplate)
-                    }
+                    WorkoutTemplatesSection(
+                        templates: templateStore.templates,
+                        onCreateTap: {
+                            router.navigate(to: .createTemplate)
+                        }
+                    )
                     .padding(.top, 24)
                     
                     AppButton(title: "Быстрый старт", type: .secondary) {
-                        router.navigate(to: .quickStart)
+                        router.navigate(to: .exerciseSelection(mode: .workout))
                     }
                     .padding(.top, 24)
                 }

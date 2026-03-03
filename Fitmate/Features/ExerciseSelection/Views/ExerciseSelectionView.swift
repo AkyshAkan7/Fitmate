@@ -1,5 +1,5 @@
 //
-//  QuickStartView.swift
+//  ExerciseSelectionView.swift
 //  Fitmate
 //
 //  Created by Akan Akysh on 22/02/26.
@@ -7,11 +7,20 @@
 
 import SwiftUI
 
-// MARK: - QuickStartView
+// MARK: - ExerciseSelectionMode
 
-struct QuickStartView: View {
+enum ExerciseSelectionMode: Hashable {
+    case workout
+    case template(name: String)
+}
+
+// MARK: - ExerciseSelectionView
+
+struct ExerciseSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var router: Router
+
+    var mode: ExerciseSelectionMode = .workout
 
     @State private var selectedMuscleGroup: MuscleGroup = .chest
     @State private var selectedExercises: Set<UUID> = []
@@ -143,7 +152,12 @@ struct QuickStartView: View {
     private var bottomButton: some View {
         AppButton(title: "Готово", isEnabled: !selectedExercises.isEmpty) {
             let selected = exercises.filter { selectedExercises.contains($0.id) }
-            router.navigate(to: .workoutConfirm(exercises: selected))
+            switch mode {
+            case .workout:
+                router.navigate(to: .workoutConfirm(exercises: selected))
+            case .template(let name):
+                router.navigate(to: .confirmTemplate(templateName: name, exercises: selected))
+            }
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
@@ -151,6 +165,6 @@ struct QuickStartView: View {
 }
 
 #Preview {
-    QuickStartView()
+    ExerciseSelectionView()
         .environmentObject(Router())
 }

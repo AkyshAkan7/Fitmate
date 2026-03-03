@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CreateWorkoutTemplateView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var router: Router
 
     @State private var templateName: String = ""
 
@@ -27,7 +28,7 @@ struct CreateWorkoutTemplateView: View {
                 Spacer()
 
                 AppButton(title: "Добавить упражнения") {
-                    // TODO: Navigate to exercise selection
+                    router.navigate(to: .exerciseSelection(mode: .template(name: templateName)))
                 }
                 .padding(.bottom, 16)
             }
