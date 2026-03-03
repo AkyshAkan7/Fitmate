@@ -16,7 +16,7 @@ struct WorkoutSet: Identifiable, Hashable {
     var isCompleted: Bool = false
 
     var displayText: String {
-        "\(Int(weight)) кг x \(reps)"
+        "\(weight.formatted) кг x \(reps)"
     }
 }
 
@@ -40,5 +40,15 @@ struct ExerciseSession: Identifiable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+}
+
+// MARK: - Double Formatting
+
+extension Double {
+    var formatted: String {
+        truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", self)
+            : String(format: "%.1f", self).replacingOccurrences(of: ".", with: ",")
     }
 }

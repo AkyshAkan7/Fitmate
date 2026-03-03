@@ -11,15 +11,30 @@ struct AddSetView: View {
     @Environment(\.dismiss) private var dismiss
 
     let setNumber: Int
-    var onAdd: ((Double, Int) -> Void)?
+    let isEditing: Bool
+    var onSave: ((Double, Int) -> Void)?
 
-    @State private var selectedWeight: Double = 25
-    @State private var selectedReps: Int = 10
+    @State private var selectedWeight: Double
+    @State private var selectedReps: Int
     @State private var weightUnit: WeightUnit = .kg
     @Namespace private var unitAnimation
 
     private let weights: [Double] = stride(from: 0, through: 300, by: 0.5).map { $0 }
     private let reps: [Int] = Array(1...100)
+
+    init(
+        setNumber: Int,
+        initialWeight: Double = 25,
+        initialReps: Int = 10,
+        isEditing: Bool = false,
+        onSave: ((Double, Int) -> Void)? = nil
+    ) {
+        self.setNumber = setNumber
+        self.isEditing = isEditing
+        self.onSave = onSave
+        _selectedWeight = State(initialValue: initialWeight)
+        _selectedReps = State(initialValue: initialReps)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,8 +56,8 @@ struct AddSetView: View {
 
             Spacer()
 
-            AppButton(title: "Добавить") {
-                onAdd?(selectedWeight, selectedReps)
+            AppButton(title: isEditing ? "Сохранить" : "Добавить") {
+                onSave?(selectedWeight, selectedReps)
                 dismiss()
             }
             .padding(.horizontal, 16)
@@ -111,7 +126,7 @@ struct AddSetView: View {
                     itemSize: .init(width: 100, height: 100)
                 )
             ) { weight in
-                Text(formatWeight(weight))
+                Text(weight.formatted)
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.appBlack)
             }
@@ -143,15 +158,6 @@ struct AddSetView: View {
         }
     }
 
-    // MARK: - Helpers
-
-    private func formatWeight(_ weight: Double) -> String {
-        if weight.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", weight)
-        } else {
-            return String(format: "%.1f", weight).replacingOccurrences(of: ".", with: ",")
-        }
-    }
 }
 
 // MARK: - Weight Unit

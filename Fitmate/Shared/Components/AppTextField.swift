@@ -1,0 +1,76 @@
+//
+//  AppTextField.swift
+//  Fitmate
+//
+//  Created by Akan Akysh on 03/03/26.
+//
+
+import SwiftUI
+
+struct AppTextField: View {
+    let title: String?
+    let placeholder: String
+    let caption: String?
+    @Binding var text: String
+
+    init(
+        _ placeholder: String = "",
+        text: Binding<String>,
+        title: String? = nil,
+        caption: String? = nil
+    ) {
+        self.placeholder = placeholder
+        self._text = text
+        self.title = title
+        self.caption = caption
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let title {
+                Text(title)
+                    .body13Regular()
+                    .foregroundStyle(Color.appGray)
+            }
+
+            TextField(placeholder, text: $text)
+                .body15Regular()
+                .foregroundStyle(Color.appBlack)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .background(Color.black.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            if let caption {
+                Text(caption)
+                    .body13Regular()
+                    .foregroundStyle(Color.appGray)
+            }
+        }
+    }
+}
+
+#Preview {
+    VStack(spacing: 24) {
+        AppTextField(
+            "Placeholder",
+            text: .constant(""),
+            title: "Label",
+            caption: "Caption"
+        )
+
+        AppTextField(
+            "Введите имя",
+            text: .constant("Akan"),
+            title: "Имя"
+        )
+
+        AppTextField(
+            "example@mail.com",
+            text: .constant(""),
+            title: "Email",
+            caption: "На этот адрес придет подтверждение"
+        )
+    }
+    .padding()
+}

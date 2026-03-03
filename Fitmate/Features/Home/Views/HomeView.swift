@@ -79,7 +79,7 @@ struct HomeView: View {
                     }
                     
                     WorkoutTemplatesSection {
-                        // TODO: Navigate to create template
+                        router.navigate(to: .createTemplate)
                     }
                     .padding(.top, 24)
                     

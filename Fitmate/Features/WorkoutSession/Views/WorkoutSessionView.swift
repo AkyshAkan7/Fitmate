@@ -17,6 +17,10 @@ struct WorkoutSessionView: View {
     @State private var selectedIndex: Int = 0
     @State private var showFinishAlert: Bool = false
     @State private var showAddSetSheet: Bool = false
+    // Edit/delete set alert
+    @State private var showSetActionSheet: Bool = false
+    @State private var showDeleteAlert: Bool = false
+    @State private var selectedSetIndex: Int?
 
     init(exercises: [Exercise]) {
         let sessions = exercises.map { exercise in
@@ -50,6 +54,20 @@ struct WorkoutSessionView: View {
     private func addSet(weight: Double, reps: Int) {
         let newSet = WorkoutSet(weight: weight, reps: reps)
         exerciseSessions[selectedIndex].sets.append(newSet)
+    }
+
+    private func updateSet(at index: Int, weight: Double, reps: Int) {
+        exerciseSessions[selectedIndex].sets[index].weight = weight
+        exerciseSessions[selectedIndex].sets[index].reps = reps
+    }
+
+    private func deleteSet(at index: Int) {
+        exerciseSessions[selectedIndex].sets.remove(at: index)
+    }
+
+    private func showSetActions(for index: Int) {
+        selectedSetIndex = index
+        showSetActionSheet = true
     }
 
     private func finishWorkout() {
@@ -86,11 +104,47 @@ struct WorkoutSessionView: View {
             Text("Все невыполненные упражнения не сохранятся. Точно завершить тренировку?")
         }
         .sheet(isPresented: $showAddSetSheet) {
-            AddSetView(setNumber: currentSession.sets.count + 1) { weight, reps in
-                addSet(weight: weight, reps: reps)
+            if let index = selectedSetIndex {
+                let set = currentSession.sets[index]
+                AddSetView(
+                    setNumber: index + 1,
+                    initialWeight: set.weight,
+                    initialReps: set.reps,
+                    isEditing: true
+                ) { weight, reps in
+                    updateSet(at: index, weight: weight, reps: reps)
+                    selectedSetIndex = nil
+                }
+                .presentationDetents([.height(420)])
+                .presentationDragIndicator(.visible)
+            } else {
+                AddSetView(setNumber: currentSession.sets.count + 1) { weight, reps in
+                    addSet(weight: weight, reps: reps)
+                }
+                .presentationDetents([.height(420)])
+                .presentationDragIndicator(.visible)
             }
-            .presentationDetents([.height(420)])
-            .presentationDragIndicator(.visible)
+        }
+        .confirmationDialog("", isPresented: $showSetActionSheet, titleVisibility: .hidden) {
+            Button("Редактировать") {
+                showAddSetSheet = true
+            }
+            Button("Удалить", role: .destructive) {
+                showDeleteAlert = true
+            }
+            Button("Отмена", role: .cancel) {}
+        }
+        .alert("Удаление", isPresented: $showDeleteAlert) {
+            Button("Нет", role: .cancel) {}
+            Button("Да") {
+                if let index = selectedSetIndex {
+                    deleteSet(at: index)
+                    selectedSetIndex = nil
+                }
+            }
+            .keyboardShortcut(.defaultAction)
+        } message: {
+            Text("Точно хотите удалить подход?")
         }
     }
 
@@ -217,17 +271,19 @@ struct WorkoutSessionView: View {
     private var setsList: some View {
         VStack(spacing: 4) {
             ForEach(Array(currentSession.sets.enumerated()), id: \.element.id) { index, set in
-                setRow(set, number: index + 1)
+                setRow(set, index: index)
             }
         }
     }
 
-    private func setRow(_ set: WorkoutSet, number: Int) -> some View {
+    private func setRow(_ set: WorkoutSet, index: Int) -> some View {
         AppCell(
-            title: "\(number) подход",
+            title: "\(index + 1) подход",
             value: set.displayText,
             trailingIcon: Image(systemName: "ellipsis")
-        )
+        ) {
+            showSetActions(for: index)
+        }
     }
 
     // MARK: - Bottom Button

@@ -30,7 +30,7 @@ struct MainAppView: View {
                             case .workoutComplete:
                                 WorkoutCompleteView()
                             case .createTemplate:
-                                EmptyView() // TODO: Add CreateTemplateView
+                                CreateWorkoutTemplateView()
                             }
                         }
                 }
