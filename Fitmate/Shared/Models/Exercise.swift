@@ -15,6 +15,12 @@ enum MuscleGroup: String, CaseIterable, Hashable {
     case arms = "Руки"
     case legs = "Ноги"
     case shoulders = "Плечи"
+    case custom = "Мои"
+
+    /// Группы мышц для фильтрации (без "Мои")
+    static var filterCases: [MuscleGroup] {
+        [.chest, .back, .arms, .legs, .shoulders]
+    }
 }
 
 // MARK: - Exercise Model

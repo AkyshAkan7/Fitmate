@@ -37,7 +37,7 @@ struct AppTextField: View {
                 .body15Regular()
                 .foregroundStyle(Color.appBlack)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 12)
+                .frame(height: 46)
                 .background(Color.black.opacity(0.04))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 

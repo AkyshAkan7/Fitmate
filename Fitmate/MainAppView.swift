@@ -33,6 +33,8 @@ struct MainAppView: View {
                                 CreateWorkoutTemplateView()
                             case .confirmTemplate(let templateName, let exercises):
                                 ConfirmWorkoutTemplateView(templateName: templateName, exercises: exercises)
+                            case .createCustomExercise:
+                                CreateCustomExerciseView()
                             }
                         }
                 }
@@ -51,4 +53,5 @@ struct MainAppView: View {
         .environmentObject(AuthManager())
         .environmentObject(LanguageManager())
         .environmentObject(Router())
+        .environmentObject(CustomExerciseStore())
 }

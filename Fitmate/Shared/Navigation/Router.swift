@@ -18,6 +18,7 @@ enum Route: Hashable {
     case workoutComplete
     case createTemplate
     case confirmTemplate(templateName: String, exercises: [Exercise])
+    case createCustomExercise
 }
 
 // MARK: - Router

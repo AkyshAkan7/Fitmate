@@ -13,6 +13,7 @@ struct FitmateApp: App {
     @StateObject private var languageManager = LanguageManager()
     @StateObject private var router = Router()
     @StateObject private var templateStore = TemplateStore()
+    @StateObject private var customExerciseStore = CustomExerciseStore()
 
     var body: some Scene {
         WindowGroup {
@@ -21,6 +22,7 @@ struct FitmateApp: App {
                 .environmentObject(languageManager)
                 .environmentObject(router)
                 .environmentObject(templateStore)
+                .environmentObject(customExerciseStore)
                 .preferredColorScheme(.light)
         }
     }

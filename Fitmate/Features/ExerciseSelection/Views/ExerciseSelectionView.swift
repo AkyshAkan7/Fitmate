@@ -19,6 +19,7 @@ enum ExerciseSelectionMode: Hashable {
 struct ExerciseSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var router: Router
+    @EnvironmentObject private var customExerciseStore: CustomExerciseStore
 
     var mode: ExerciseSelectionMode = .workout
 
@@ -39,7 +40,21 @@ struct ExerciseSelectionView: View {
     ]
 
     private var filteredExercises: [Exercise] {
-        exercises.filter { $0.muscleGroup == selectedMuscleGroup }
+        if selectedMuscleGroup == .custom {
+            return customExerciseStore.exercises
+        }
+        return exercises.filter { $0.muscleGroup == selectedMuscleGroup }
+    }
+
+    private var allAvailableExercises: [Exercise] {
+        exercises + customExerciseStore.exercises
+    }
+
+    private var chipItems: [MuscleGroup] {
+        if customExerciseStore.exercises.isEmpty {
+            return MuscleGroup.filterCases
+        }
+        return [.custom] + MuscleGroup.filterCases
     }
 
     var body: some View {
@@ -54,7 +69,9 @@ struct ExerciseSelectionView: View {
                     exerciseList
 
                     // Create Custom Link
-                    createCustomLink
+                    if selectedMuscleGroup != .custom {
+                        createCustomLink
+                    }
                 }
                 .padding(.top, 16)
             }
@@ -83,7 +100,7 @@ struct ExerciseSelectionView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     AppChipGroup(
-                        items: MuscleGroup.allCases,
+                        items: chipItems,
                         selected: $selectedMuscleGroup,
                         titleFor: { $0.rawValue }
                     )
@@ -130,7 +147,7 @@ struct ExerciseSelectionView: View {
                 .foregroundStyle(Color.appGray)
 
             Button {
-                // Handle create custom action
+                router.navigate(to: .createCustomExercise)
             } label: {
                 Text("Создать свое")
                     .body15Semibold()
@@ -151,7 +168,7 @@ struct ExerciseSelectionView: View {
 
     private var bottomButton: some View {
         AppButton(title: "Готово", isEnabled: !selectedExercises.isEmpty) {
-            let selected = exercises.filter { selectedExercises.contains($0.id) }
+            let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
             switch mode {
             case .workout:
                 router.navigate(to: .workoutConfirm(exercises: selected))
@@ -167,4 +184,5 @@ struct ExerciseSelectionView: View {
 #Preview {
     ExerciseSelectionView()
         .environmentObject(Router())
+        .environmentObject(CustomExerciseStore())
 }

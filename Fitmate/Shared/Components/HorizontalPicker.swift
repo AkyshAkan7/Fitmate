@@ -53,6 +53,7 @@ struct HorizontalPicker<SelectionValue, Content>: View where SelectionValue: Has
                         }
                     }
                 }
+                .sensoryFeedback(.selection, trigger: selection)
                 .mask { maskView }
         }
     }
