@@ -40,7 +40,7 @@ struct HorizontalPicker<SelectionValue, Content>: View where SelectionValue: Has
             let margin = max((size.width - config.itemSize.width) / 2, 0)
 
             scrollViewContent
-                .scrollTargetBehavior(.viewAligned)
+                .scrollTargetBehavior(.viewAligned(limitBehavior: .never))
                 .contentMargins(.horizontal, margin)
                 .scrollPosition($scrollPosition, anchor: .center)
                 .onAppear {
@@ -53,7 +53,7 @@ struct HorizontalPicker<SelectionValue, Content>: View where SelectionValue: Has
                         }
                     }
                 }
-                .sensoryFeedback(.selection, trigger: selection)
+                .sensoryFeedback(.impact(weight: .heavy), trigger: selection)
                 .mask { maskView }
         }
     }

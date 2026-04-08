@@ -63,7 +63,8 @@ struct AddSetView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .background(Color.white)
+        .background(.white)
+        .presentationBackground(.white)
     }
 
     // MARK: - Header
@@ -108,6 +109,7 @@ struct AddSetView: View {
         .padding(4)
         .background(Color.lightGray)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .sensoryFeedback(.impact(weight: .heavy), trigger: weightUnit)
     }
 
     // MARK: - Weight Picker

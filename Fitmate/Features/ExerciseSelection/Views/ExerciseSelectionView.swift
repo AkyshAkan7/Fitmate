@@ -10,8 +10,12 @@ import SwiftUI
 // MARK: - ExerciseSelectionMode
 
 enum ExerciseSelectionMode: Hashable {
+    // Main workout flow
     case workout
+    // Add template flow
     case template(name: String)
+    // Change exercise flow
+    case replace
 }
 
 // MARK: - ExerciseSelectionView
@@ -25,6 +29,11 @@ struct ExerciseSelectionView: View {
 
     @State private var selectedMuscleGroup: MuscleGroup = .chest
     @State private var selectedExercises: Set<UUID> = []
+    @State private var selectedExercise: Exercise?
+
+    private var isReplaceMode: Bool {
+        mode == .replace
+    }
 
     private let exercises: [Exercise] = [
         Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
@@ -80,6 +89,12 @@ struct ExerciseSelectionView: View {
             bottomButton
         }
         .navigationBarHidden(true)
+        // Switch to "My" tab when a new custom exercise is added
+        .onChange(of: customExerciseStore.exercises.count) { oldCount, newCount in
+            if newCount > oldCount {
+                selectedMuscleGroup = .custom
+            }
+        }
     }
 
     // MARK: - Navigation Bar
@@ -95,7 +110,7 @@ struct ExerciseSelectionView: View {
                         .foregroundStyle(Color.primary)
                 }
 
-                Text("Выбери упражнения")
+                Text(isReplaceMode ? "Выбери упражнение" : "Выбери упражнения")
                     .headline24Semibold()
 
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -123,18 +138,35 @@ struct ExerciseSelectionView: View {
                     icon: Image(systemName: "dumbbell"),
                     title: exercise.name,
                     subtitle: exercise.subtitle,
-                    isSelected: Binding(
-                        get: { selectedExercises.contains(exercise.id) },
-                        set: { isSelected in
-                            if isSelected {
-                                selectedExercises.insert(exercise.id)
-                            } else {
-                                selectedExercises.remove(exercise.id)
-                            }
-                        }
-                    )
+                    style: isReplaceMode ? .radio : .checkbox,
+                    isSelected: isSelectedBinding(for: exercise)
                 )
             }
+        }
+    }
+
+    private func isSelectedBinding(for exercise: Exercise) -> Binding<Bool> {
+        Binding(
+            get: {
+                isReplaceMode
+                    ? selectedExercise?.id == exercise.id
+                    : selectedExercises.contains(exercise.id)
+            },
+            set: { isSelected in
+                if isReplaceMode {
+                    selectedExercise = isSelected ? exercise : nil
+                } else {
+                    toggleExerciseSelection(exercise, isSelected: isSelected)
+                }
+            }
+        )
+    }
+
+    private func toggleExerciseSelection(_ exercise: Exercise, isSelected: Bool) {
+        if isSelected {
+            selectedExercises.insert(exercise.id)
+        } else {
+            selectedExercises.remove(exercise.id)
         }
     }
 
@@ -167,13 +199,23 @@ struct ExerciseSelectionView: View {
     // MARK: - Bottom Button
 
     private var bottomButton: some View {
-        AppButton(title: "Готово", isEnabled: !selectedExercises.isEmpty) {
-            let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
+        let isEnabled = isReplaceMode ? selectedExercise != nil : !selectedExercises.isEmpty
+        let title = isReplaceMode ? "Заменить" : "Готово"
+
+        return AppButton(title: title, isEnabled: isEnabled) {
             switch mode {
             case .workout:
+                let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
                 router.navigate(to: .workoutConfirm(exercises: selected))
             case .template(let name):
+                let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
                 router.navigate(to: .confirmTemplate(templateName: name, exercises: selected))
+            case .replace:
+                if let exercise = selectedExercise {
+                    router.onExerciseReplace?(exercise)
+                    router.onExerciseReplace = nil
+                    router.pop()
+                }
             }
         }
         .padding(.horizontal, 16)

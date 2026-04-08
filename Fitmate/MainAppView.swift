@@ -35,6 +35,8 @@ struct MainAppView: View {
                                 ConfirmWorkoutTemplateView(templateName: templateName, exercises: exercises)
                             case .createCustomExercise:
                                 CreateCustomExerciseView()
+                            case .replaceExercise:
+                                ExerciseSelectionView(mode: .replace)
                             }
                         }
                 }

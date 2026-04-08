@@ -218,9 +218,12 @@ struct WorkoutSessionView: View {
         AppCell(
             title: currentSession.exercise.name,
             subtitle: currentSession.exercise.subtitle,
-            trailingIcon: Image(systemName: "arrow.triangle.2.circlepath")
+            trailingIcon: Image("reload")
         ) {
-            // TODO: Replace exercise
+            router.onExerciseReplace = { [self] newExercise in
+                exerciseSessions[selectedIndex].exercise = newExercise
+            }
+            router.navigate(to: .replaceExercise)
         }
     }
 

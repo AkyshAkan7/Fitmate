@@ -24,7 +24,7 @@ struct WorkoutSet: Identifiable, Hashable {
 
 struct ExerciseSession: Identifiable {
     let id = UUID()
-    let exercise: Exercise
+    var exercise: Exercise
     var sets: [WorkoutSet]
     var lastResult: String?
 

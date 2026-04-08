@@ -19,12 +19,15 @@ enum Route: Hashable {
     case createTemplate
     case confirmTemplate(templateName: String, exercises: [Exercise])
     case createCustomExercise
+    case replaceExercise
 }
 
 // MARK: - Router
 
 final class Router: ObservableObject {
     @Published var path = NavigationPath()
+
+    var onExerciseReplace: ((Exercise) -> Void)?
 
     func navigate(to route: Route) {
         path.append(route)

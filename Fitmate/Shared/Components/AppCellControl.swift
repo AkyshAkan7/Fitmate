@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+enum AppCellControlStyle {
+    case checkbox
+    case radio
+}
+
 struct AppCellControl: View {
     let icon: Image
     let title: String
@@ -14,6 +19,7 @@ struct AppCellControl: View {
     var value: String? = nil
     var subvalue: String? = nil
     var isReverse: Bool = false
+    var style: AppCellControlStyle = .checkbox
     @Binding var isSelected: Bool
 
     var body: some View {
@@ -55,21 +61,8 @@ struct AppCellControl: View {
                     }
                 }
 
-                // Checkbox
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.appBlack : Color.appGray.opacity(0.3), lineWidth: 1.5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(isSelected ? Color.appBlack : Color.clear)
-                    )
-                    .frame(width: 20, height: 20)
-                    .overlay {
-                        if isSelected {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Color.white)
-                        }
-                    }
+                // Selection indicator
+                selectionIndicator
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -112,13 +105,50 @@ struct AppCellControl: View {
                 .foregroundStyle(Color.appGray)
         }
     }
+
+    @ViewBuilder
+    private var selectionIndicator: some View {
+        switch style {
+        case .checkbox:
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isSelected ? Color.appBlack : Color.appGray.opacity(0.3), lineWidth: 1.5)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(isSelected ? Color.appBlack : Color.clear)
+                )
+                .frame(width: 20, height: 20)
+                .overlay {
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Color.white)
+                    }
+                }
+        case .radio:
+            Circle()
+                .stroke(isSelected ? Color.appBlack : Color.appGray.opacity(0.3), lineWidth: 2)
+                .background(
+                    Circle()
+                        .fill(Color.clear)
+                )
+                .frame(width: 20, height: 20)
+                .overlay {
+                    if isSelected {
+                        Circle()
+                            .fill(Color.appBlack)
+                            .frame(width: 10, height: 10)
+                    }
+                }
+        }
+    }
 }
 
 #Preview {
     struct PreviewWrapper: View {
         @State private var isSelected1 = false
-        @State private var isSelected2 = false
-        @State private var isSelected3 = true
+        @State private var isSelected2 = true
+        @State private var isSelected3 = false
+        @State private var isSelected4 = true
 
         var body: some View {
             VStack(spacing: 12) {
@@ -145,7 +175,19 @@ struct AppCellControl: View {
                     value: "Value",
                     subvalue: "Subvalue",
                     isReverse: true,
+                    style: .radio,
                     isSelected: $isSelected3
+                )
+                
+                AppCellControl(
+                    icon: Image(systemName: "dumbbell"),
+                    title: "Title",
+                    subtitle: "Subtitle",
+                    value: "Value",
+                    subvalue: "Subvalue",
+                    isReverse: true,
+                    style: .radio,
+                    isSelected: $isSelected4
                 )
             }
             .padding()
