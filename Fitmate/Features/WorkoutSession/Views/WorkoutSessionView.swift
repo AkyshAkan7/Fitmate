@@ -93,7 +93,7 @@ struct WorkoutSessionView: View {
 
             bottomButton
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .alert("Завершение", isPresented: $showFinishAlert) {
             Button("Нет", role: .cancel) {}
             Button("Да", role: .none) {

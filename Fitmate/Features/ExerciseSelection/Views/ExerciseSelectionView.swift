@@ -88,7 +88,7 @@ struct ExerciseSelectionView: View {
             // Bottom Button
             bottomButton
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         // Switch to "My" tab when a new custom exercise is added
         .onChange(of: customExerciseStore.exercises.count) { oldCount, newCount in
             if newCount > oldCount {

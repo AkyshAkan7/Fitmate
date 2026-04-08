@@ -39,7 +39,7 @@ struct WorkoutCompleteView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

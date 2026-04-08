@@ -35,7 +35,7 @@ struct CreateWorkoutTemplateView: View {
             .padding(.horizontal, 16)
         }
         .background(Color.white)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Navigation Bar

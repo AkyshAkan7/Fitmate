@@ -75,7 +75,7 @@ struct WorkoutConfirmView: View {
             // Bottom Buttons
             bottomButtons
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             if !hasSeenReorderTip {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

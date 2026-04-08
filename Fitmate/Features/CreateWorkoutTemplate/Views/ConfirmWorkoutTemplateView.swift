@@ -42,7 +42,7 @@ struct ConfirmWorkoutTemplateView: View {
             bottomButtons
         }
         .background(Color.white)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Navigation Bar
