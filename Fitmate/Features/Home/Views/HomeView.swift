@@ -83,6 +83,9 @@ struct HomeView: View {
                         templates: templateStore.templates,
                         onCreateTap: {
                             router.navigate(to: .createTemplate)
+                        },
+                        onTemplateTap: { template in
+                            router.navigate(to: .workoutConfirm(exercises: template.exercises))
                         }
                     )
                     .padding(.top, 24)
