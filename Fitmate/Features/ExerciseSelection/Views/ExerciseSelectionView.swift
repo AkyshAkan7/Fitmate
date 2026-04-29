@@ -27,6 +27,7 @@ struct ExerciseSelectionView: View {
 
     var mode: ExerciseSelectionMode = .workout
 
+    @State private var viewModel = ExerciseSelectionViewModel()
     @State private var selectedMuscleGroup: MuscleGroup = .chest
     @State private var selectedExercises: Set<UUID> = []
     @State private var selectedExercise: Exercise?
@@ -35,35 +36,23 @@ struct ExerciseSelectionView: View {
         mode == .replace
     }
 
-    private let exercises: [Exercise] = [
-        Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Тяга штанги", subtitle: "Subtitle", muscleGroup: .back),
-        Exercise(name: "Подтягивания", subtitle: "Subtitle", muscleGroup: .back),
-        Exercise(name: "Сгибания на бицепс", subtitle: "Subtitle", muscleGroup: .arms),
-        Exercise(name: "Приседания", subtitle: "Subtitle", muscleGroup: .legs),
-        Exercise(name: "Жим плечами", subtitle: "Subtitle", muscleGroup: .shoulders),
-    ]
-
     private var filteredExercises: [Exercise] {
         if selectedMuscleGroup == .custom {
             return customExerciseStore.exercises
         }
-        return exercises.filter { $0.muscleGroup == selectedMuscleGroup }
+        return viewModel.exercises(for: selectedMuscleGroup)
     }
 
     private var allAvailableExercises: [Exercise] {
-        exercises + customExerciseStore.exercises
+        viewModel.allExercises + customExerciseStore.exercises
     }
 
     private var chipItems: [MuscleGroup] {
+        let server = viewModel.availableGroups
         if customExerciseStore.exercises.isEmpty {
-            return MuscleGroup.filterCases
+            return server
         }
-        return [.custom] + MuscleGroup.filterCases
+        return [.custom] + server
     }
 
     var body: some View {
@@ -72,27 +61,61 @@ struct ExerciseSelectionView: View {
             navigationBar
 
             // Content
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    // Exercise List
-                    exerciseList
-
-                    // Create Custom Link
-                    if selectedMuscleGroup != .custom {
-                        createCustomLink
-                    }
-                }
-                .padding(.top, 16)
-            }
+            content
 
             // Bottom Button
             bottomButton
         }
         .toolbar(.hidden, for: .navigationBar)
+        .task { await viewModel.load() }
+        .onChange(of: viewModel.availableGroups) { _, groups in
+            // После загрузки: если выбранной группы нет в ответе — переключаемся на первую доступную
+            if selectedMuscleGroup != .custom, !groups.contains(selectedMuscleGroup), let first = groups.first {
+                selectedMuscleGroup = first
+            }
+        }
         // Switch to "My" tab when a new custom exercise is added
         .onChange(of: customExerciseStore.exercises.count) { oldCount, newCount in
             if newCount > oldCount {
                 selectedMuscleGroup = .custom
+            }
+        }
+    }
+
+    // MARK: - Content
+
+    @ViewBuilder
+    private var content: some View {
+        switch viewModel.state {
+        case .loading where viewModel.exercisesByGroup.isEmpty:
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case .failed(let message) where viewModel.exercisesByGroup.isEmpty:
+            VStack(spacing: 12) {
+                Text(message)
+                    .body15Regular()
+                    .foregroundStyle(Color.appGray)
+                    .multilineTextAlignment(.center)
+                Button("Повторить") {
+                    Task { await viewModel.load() }
+                }
+                .body15Semibold()
+                .foregroundStyle(.blue)
+            }
+            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        default:
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    exerciseList
+
+                    if selectedMuscleGroup != .custom {
+                        createCustomLink
+                    }
+                }
+                .padding(.top, 16)
             }
         }
     }
