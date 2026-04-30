@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AppCell: View {
     var icon: Image? = nil
+    var iconURL: URL? = nil
     let title: String
     var subtitle: String? = nil
     var value: String? = nil
@@ -22,15 +23,7 @@ struct AppCell: View {
             action?()
         } label: {
             HStack(spacing: 12) {
-                // Icon
-                if let icon {
-                    icon
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 48, height: 48)
-                        .background(Color.lightGray)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
+                iconView
 
                 // Title & Subtitle
                 VStack(alignment: .leading, spacing: 2) {
@@ -75,6 +68,27 @@ struct AppCell: View {
     }
 
     @ViewBuilder
+    private var iconView: some View {
+        if iconURL != nil {
+            CachedAsyncImage(
+                url: iconURL,
+                content: { image in image.resizable().scaledToFill() },
+                placeholder: { Color.lightGray }
+            )
+            .frame(width: 48, height: 48)
+            .background(Color.lightGray)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        } else if let icon {
+            icon
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
+                .background(Color.lightGray)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    @ViewBuilder
     private var titleView: some View {
         Text(title)
             .body15Regular()
@@ -83,7 +97,7 @@ struct AppCell: View {
 
     @ViewBuilder
     private var subtitleView: some View {
-        if let subtitle {
+        if let subtitle, !subtitle.isEmpty {
             Text(subtitle)
                 .body13Regular()
                 .foregroundStyle(Color.appGray)
@@ -92,7 +106,7 @@ struct AppCell: View {
 
     @ViewBuilder
     private var valueView: some View {
-        if let value {
+        if let value, !value.isEmpty {
             Text(value)
                 .body15Regular()
                 .foregroundStyle(Color.appBlack)
@@ -101,7 +115,7 @@ struct AppCell: View {
 
     @ViewBuilder
     private var subvalueView: some View {
-        if let subvalue {
+        if let subvalue, !subvalue.isEmpty {
             Text(subvalue)
                 .body13Regular()
                 .foregroundStyle(Color.appGray)

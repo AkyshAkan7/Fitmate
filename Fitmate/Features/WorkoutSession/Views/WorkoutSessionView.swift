@@ -195,19 +195,20 @@ struct WorkoutSessionView: View {
         Button {
             selectExercise(at: index)
         } label: {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.lightGray)
-                .frame(width: 72, height: 72)
-                .overlay {
-                    Image(systemName: "dumbbell")
-                        .font(.system(size: 24))
+            CachedAsyncImage(
+                url: session.exercise.imageURL,
+                content: { image in image.resizable().scaledToFill() },
+                placeholder: { Color.lightGray }
+            )
+            .frame(width: 72, height: 72)
+            .background(Color.lightGray)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay {
+                if index == selectedIndex {
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Color.appBlack, lineWidth: 1.5)
                 }
-                .overlay {
-                    if index == selectedIndex {
-                        RoundedRectangle(cornerRadius: 16)
-                            .strokeBorder(Color.appBlack, lineWidth: 1.5)
-                    }
-                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -216,6 +217,7 @@ struct WorkoutSessionView: View {
 
     private var exerciseInfo: some View {
         AppCell(
+            iconURL: currentSession.exercise.imageURL,
             title: currentSession.exercise.name,
             subtitle: currentSession.exercise.subtitle,
             trailingIcon: Image("reload")
@@ -304,12 +306,12 @@ struct WorkoutSessionView: View {
 
 #Preview {
     WorkoutSessionView(exercises: [
-        Exercise(name: "Жим штангой", subtitle: "Отрицательный наклон", muscleGroup: .chest),
-        Exercise(name: "Жим гантелей", subtitle: "На наклонной скамье", muscleGroup: .chest),
-        Exercise(name: "Разводка гантелей", subtitle: "На горизонтальной скамье", muscleGroup: .chest),
-        Exercise(name: "Кроссовер", subtitle: "Верхний блок", muscleGroup: .chest),
-        Exercise(name: "Отжимания", subtitle: "На брусьях", muscleGroup: .chest),
-        Exercise(name: "Кроссовер", subtitle: "Верхний блок", muscleGroup: .chest),
-        Exercise(name: "Брусья", subtitle: "На наклонной скамье", muscleGroup: .chest),
+        Exercise(name: "Жим штангой", subtitle: "Отрицательный наклон", muscleGroup: .previewChest),
+        Exercise(name: "Жим гантелей", subtitle: "На наклонной скамье", muscleGroup: .previewChest),
+        Exercise(name: "Разводка гантелей", subtitle: "На горизонтальной скамье", muscleGroup: .previewChest),
+        Exercise(name: "Кроссовер", subtitle: "Верхний блок", muscleGroup: .previewChest),
+        Exercise(name: "Отжимания", subtitle: "На брусьях", muscleGroup: .previewChest),
+        Exercise(name: "Кроссовер", subtitle: "Верхний блок", muscleGroup: .previewChest),
+        Exercise(name: "Брусья", subtitle: "На наклонной скамье", muscleGroup: .previewChest),
     ])
 }

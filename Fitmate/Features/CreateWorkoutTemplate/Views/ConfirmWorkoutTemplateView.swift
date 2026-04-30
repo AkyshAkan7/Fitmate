@@ -119,10 +119,10 @@ struct ConfirmWorkoutTemplateView: View {
     ConfirmWorkoutTemplateView(
         templateName: "Грудь и бицепс",
         exercises: [
-            Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-            Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .chest),
-            Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-            Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .chest),
+            Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .previewChest),
+            Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .previewChest),
+            Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .previewChest),
+            Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .previewChest),
         ]
     )
     .environmentObject(Router())

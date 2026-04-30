@@ -13,7 +13,8 @@ enum AppCellControlStyle {
 }
 
 struct AppCellControl: View {
-    let icon: Image
+    private let staticIcon: Image?
+    private let iconURL: URL?
     let title: String
     var subtitle: String? = nil
     var value: String? = nil
@@ -22,18 +23,54 @@ struct AppCellControl: View {
     var style: AppCellControlStyle = .checkbox
     @Binding var isSelected: Bool
 
+    init(
+        icon: Image,
+        title: String,
+        subtitle: String? = nil,
+        value: String? = nil,
+        subvalue: String? = nil,
+        isReverse: Bool = false,
+        style: AppCellControlStyle = .checkbox,
+        isSelected: Binding<Bool>
+    ) {
+        self.staticIcon = icon
+        self.iconURL = nil
+        self.title = title
+        self.subtitle = subtitle
+        self.value = value
+        self.subvalue = subvalue
+        self.isReverse = isReverse
+        self.style = style
+        self._isSelected = isSelected
+    }
+
+    init(
+        iconURL: URL?,
+        title: String,
+        subtitle: String? = nil,
+        value: String? = nil,
+        subvalue: String? = nil,
+        isReverse: Bool = false,
+        style: AppCellControlStyle = .checkbox,
+        isSelected: Binding<Bool>
+    ) {
+        self.staticIcon = nil
+        self.iconURL = iconURL
+        self.title = title
+        self.subtitle = subtitle
+        self.value = value
+        self.subvalue = subvalue
+        self.isReverse = isReverse
+        self.style = style
+        self._isSelected = isSelected
+    }
+
     var body: some View {
         Button {
             isSelected.toggle()
         } label: {
             HStack(spacing: 12) {
-                // Icon
-                icon
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 48, height: 48)
-                    .background(Color.lightGray)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                iconView
 
                 // Title & Subtitle
                 VStack(alignment: .leading, spacing: 2) {
@@ -73,6 +110,24 @@ struct AppCellControl: View {
     }
 
     @ViewBuilder
+    private var iconView: some View {
+        Group {
+            if let staticIcon {
+                staticIcon.resizable().scaledToFit()
+            } else {
+                CachedAsyncImage(
+                    url: iconURL,
+                    content: { image in image.resizable().scaledToFill() },
+                    placeholder: { Color.lightGray }
+                )
+            }
+        }
+        .frame(width: 48, height: 48)
+        .background(Color.lightGray)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
     private var titleView: some View {
         Text(title)
             .body15Regular()
@@ -81,7 +136,7 @@ struct AppCellControl: View {
 
     @ViewBuilder
     private var subtitleView: some View {
-        if let subtitle {
+        if let subtitle, !subtitle.isEmpty {
             Text(subtitle)
                 .body13Regular()
                 .foregroundStyle(Color.appGray)
@@ -90,7 +145,7 @@ struct AppCellControl: View {
 
     @ViewBuilder
     private var valueView: some View {
-        if let value {
+        if let value, !value.isEmpty {
             Text(value)
                 .body15Regular()
                 .foregroundStyle(Color.appBlack)
@@ -99,7 +154,7 @@ struct AppCellControl: View {
 
     @ViewBuilder
     private var subvalueView: some View {
-        if let subvalue {
+        if let subvalue, !subvalue.isEmpty {
             Text(subvalue)
                 .body13Regular()
                 .foregroundStyle(Color.appGray)

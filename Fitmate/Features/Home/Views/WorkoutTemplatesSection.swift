@@ -97,11 +97,11 @@ struct WorkoutTemplatesSection: View {
         WorkoutTemplatesSection(
             templates: [
                 WorkoutTemplate(name: "Грудь и бицепс", exercises: [
-                    Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-                    Exercise(name: "Жим гантелей", subtitle: "Subtitle", muscleGroup: .chest),
+                    Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .previewChest),
+                    Exercise(name: "Жим гантелей", subtitle: "Subtitle", muscleGroup: .previewChest),
                 ]),
                 WorkoutTemplate(name: "Спина и трицепс", exercises: [
-                    Exercise(name: "Тяга штанги", subtitle: "Subtitle", muscleGroup: .back),
+                    Exercise(name: "Тяга штанги", subtitle: "Subtitle", muscleGroup: .previewBack),
                 ])
             ]
         )

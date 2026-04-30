@@ -137,7 +137,7 @@ struct WorkoutConfirmView: View {
 
     private func exerciseRow(_ exercise: Exercise) -> some View {
         AppCell(
-            icon: Image(systemName: "dumbbell"),
+            iconURL: exercise.imageURL,
             title: exercise.name,
             subtitle: exercise.subtitle,
             trailingIcon: nil
@@ -163,9 +163,9 @@ struct WorkoutConfirmView: View {
 
 #Preview {
     WorkoutConfirmView(exercises: [
-        Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .chest),
-        Exercise(name: "Жим штанги 90 градусов", subtitle: "Subtitle", muscleGroup: .chest),
+        Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .previewChest),
+        Exercise(name: "Жим штанги 45 градусов", subtitle: "Subtitle", muscleGroup: .previewChest),
+        Exercise(name: "Жим штанги 90 градусов", subtitle: "Subtitle", muscleGroup: .previewChest),
     ])
     .environmentObject(Router())
 }

@@ -12,7 +12,7 @@ final class CustomExerciseStore: ObservableObject {
     @Published var exercises: [Exercise] = []
 
     func add(name: String) {
-        let exercise = Exercise(name: name, subtitle: "Моё упражнение", muscleGroup: .custom)
+        let exercise = Exercise(name: name, subtitle: "Моё упражнение", muscleGroup: MuscleGroup.custom)
         exercises.append(exercise)
     }
 

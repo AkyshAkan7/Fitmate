@@ -19,8 +19,8 @@ final class ExerciseSelectionViewModel {
     }
 
     private(set) var state: LoadState = .idle
-    private(set) var exercisesByGroup: [MuscleGroup: [Exercise]] = [:]
     private(set) var availableGroups: [MuscleGroup] = []
+    private(set) var exercisesByGroup: [MuscleGroup: [Exercise]] = [:]
 
     private let service: ExerciseService
 
@@ -57,12 +57,15 @@ final class ExerciseSelectionViewModel {
         var byGroup: [MuscleGroup: [Exercise]] = [:]
 
         for section in sections {
-            // Маппим серверный nameRu в локальный enum (Грудь/Спина/...)
-            // Если сервер вернёт неизвестную группу — пока пропускаем
-            guard let group = MuscleGroup(rawValue: section.nameRu) else { continue }
+            let group = MuscleGroup(id: section.id, name: section.name, nameRu: section.nameRu)
             groups.append(group)
             byGroup[group] = section.exercises.map {
-                Exercise(name: $0.nameRu, subtitle: $0.subtitleRu, muscleGroup: group)
+                Exercise(
+                    name: $0.nameRu,
+                    subtitle: $0.subtitleRu,
+                    muscleGroup: group,
+                    imageURL: $0.imageLink.flatMap { URL(string: $0) }
+                )
             }
         }
 

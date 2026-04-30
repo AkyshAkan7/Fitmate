@@ -19,8 +19,8 @@ final class DefaultExerciseService: ExerciseService {
     }
 
     func fetchMuscleGroups() async throws -> [MuscleGroupSection] {
-        let response: MuscleGroupsResponse = try await client.send(ExerciseEndpoint.list)
-        return response.muscleGroups.map(\.toDomain)
+        let dtos: [MuscleGroupDTO] = try await client.send(ExerciseEndpoint.list)
+        return dtos.map(\.toDomain)
     }
 }
 
@@ -35,10 +35,6 @@ private enum ExerciseEndpoint: Endpoint {
 }
 
 // MARK: - DTO
-
-private struct MuscleGroupsResponse: Decodable {
-    let muscleGroups: [MuscleGroupDTO]
-}
 
 private struct MuscleGroupDTO: Decodable {
     let id: String

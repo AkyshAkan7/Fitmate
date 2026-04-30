@@ -9,18 +9,22 @@ import Foundation
 
 // MARK: - Muscle Group
 
-enum MuscleGroup: String, CaseIterable, Hashable {
-    case chest = "Грудь"
-    case back = "Спина"
-    case arms = "Руки"
-    case legs = "Ноги"
-    case shoulders = "Плечи"
-    case custom = "Мои"
+struct MuscleGroup: Identifiable, Hashable {
+    let id: String
+    let name: String
+    let nameRu: String
 
-    /// Группы мышц для фильтрации (без "Мои")
-    static var filterCases: [MuscleGroup] {
-        [.chest, .back, .arms, .legs, .shoulders]
-    }
+    /// Локальный сентинел для таба «Мои» (не приходит с сервера).
+    static let custom = MuscleGroup(id: "__custom__", name: "My", nameRu: "Мои")
+
+    /// Что показывать на чипах. Пока — русское имя.
+    /// При локализации заменим на выбор по `Locale.current`.
+    var displayName: String { nameRu }
+
+    #if DEBUG
+    static let previewChest = MuscleGroup(id: "preview-chest", name: "Chest", nameRu: "Грудь")
+    static let previewBack = MuscleGroup(id: "preview-back", name: "Back", nameRu: "Спина")
+    #endif
 }
 
 // MARK: - Exercise Model
@@ -30,4 +34,12 @@ struct Exercise: Identifiable, Hashable {
     let name: String
     let subtitle: String
     let muscleGroup: MuscleGroup
+    let imageURL: URL?
+
+    init(name: String, subtitle: String, muscleGroup: MuscleGroup, imageURL: URL? = nil) {
+        self.name = name
+        self.subtitle = subtitle
+        self.muscleGroup = muscleGroup
+        self.imageURL = imageURL
+    }
 }

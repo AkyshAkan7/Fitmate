@@ -28,7 +28,7 @@ struct ExerciseSelectionView: View {
     var mode: ExerciseSelectionMode = .workout
 
     @State private var viewModel = ExerciseSelectionViewModel()
-    @State private var selectedMuscleGroup: MuscleGroup = .chest
+    @State private var selectedMuscleGroup: MuscleGroup = .custom
     @State private var selectedExercises: Set<UUID> = []
     @State private var selectedExercise: Exercise?
 
@@ -69,8 +69,12 @@ struct ExerciseSelectionView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { await viewModel.load() }
         .onChange(of: viewModel.availableGroups) { _, groups in
-            // После загрузки: если выбранной группы нет в ответе — переключаемся на первую доступную
-            if selectedMuscleGroup != .custom, !groups.contains(selectedMuscleGroup), let first = groups.first {
+            guard let first = groups.first else { return }
+            if selectedMuscleGroup == .custom, customExerciseStore.exercises.isEmpty {
+                // Стартовое состояние: кастомов нет, грузим серверные — встаём на первую группу
+                selectedMuscleGroup = first
+            } else if selectedMuscleGroup != .custom, !groups.contains(selectedMuscleGroup) {
+                // Выбранной группы больше нет в ответе сервера
                 selectedMuscleGroup = first
             }
         }
@@ -140,7 +144,7 @@ struct ExerciseSelectionView: View {
                     AppChipGroup(
                         items: chipItems,
                         selected: $selectedMuscleGroup,
-                        titleFor: { $0.rawValue }
+                        titleFor: { $0.displayName }
                     )
                 }
             }
@@ -158,7 +162,7 @@ struct ExerciseSelectionView: View {
         VStack(spacing: 0) {
             ForEach(filteredExercises) { exercise in
                 AppCellControl(
-                    icon: Image(systemName: "dumbbell"),
+                    iconURL: exercise.imageURL,
                     title: exercise.name,
                     subtitle: exercise.subtitle,
                     style: isReplaceMode ? .radio : .checkbox,
