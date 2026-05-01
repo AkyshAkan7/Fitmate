@@ -34,17 +34,21 @@ struct AppChipGroup<T: Hashable>: View {
     let items: [T]
     @Binding var selected: T
     let titleFor: (T) -> String
+    var contentInset: CGFloat = 16
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(items, id: \.self) { item in
-                AppChip(
-                    title: titleFor(item),
-                    isSelected: selected == item
-                ) {
-                    selected = item
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 4) {
+                ForEach(items, id: \.self) { item in
+                    AppChip(
+                        title: titleFor(item),
+                        isSelected: selected == item
+                    ) {
+                        selected = item
+                    }
                 }
             }
+            .padding(.horizontal, contentInset)
         }
     }
 }

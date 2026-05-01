@@ -54,7 +54,7 @@ struct HomeView: View {
                             title: "Прогресс силовых",
                             subtitle: "Упражнений: 12"
                         ) {
-                            print("tap")
+                            router.navigate(to: .strengthProgress)
                         }
                         
                         Divider()

@@ -11,18 +11,22 @@ struct AppTextField: View {
     let title: String?
     let placeholder: String
     let caption: String?
+    let autoFocus: Bool
     @Binding var text: String
+    @FocusState private var isFocused: Bool
 
     init(
         _ placeholder: String = "",
         text: Binding<String>,
         title: String? = nil,
-        caption: String? = nil
+        caption: String? = nil,
+        autoFocus: Bool = false
     ) {
         self.placeholder = placeholder
         self._text = text
         self.title = title
         self.caption = caption
+        self.autoFocus = autoFocus
     }
 
     var body: some View {
@@ -40,12 +44,19 @@ struct AppTextField: View {
                 .frame(height: 46)
                 .background(Color.black.opacity(0.04))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .focused($isFocused)
 
             if let caption {
                 Text(caption)
                     .body13Regular()
                     .foregroundStyle(Color.appGray)
             }
+        }
+        .task {
+            // Небольшая задержка — иначе фокус не успевает примениться после push-перехода
+            guard autoFocus else { return }
+            try? await Task.sleep(for: .milliseconds(300))
+            isFocused = true
         }
     }
 }

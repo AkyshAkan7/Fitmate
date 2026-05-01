@@ -20,6 +20,8 @@ enum Route: Hashable {
     case confirmTemplate(templateName: String, exercises: [Exercise])
     case createCustomExercise
     case replaceExercise
+    case strengthProgress
+    case exerciseProgress(name: String, subtitle: String)
 }
 
 // MARK: - Router

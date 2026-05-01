@@ -129,27 +129,27 @@ struct ExerciseSelectionView: View {
     private var navigationBar: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(Color.primary)
-                }
+                VStack(alignment: .leading, spacing: 16) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(Color.primary)
+                    }
 
-                Text(isReplaceMode ? "Выбери упражнение" : "Выбери упражнения")
-                    .headline24Semibold()
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    AppChipGroup(
-                        items: chipItems,
-                        selected: $selectedMuscleGroup,
-                        titleFor: { $0.displayName }
-                    )
+                    Text(isReplaceMode ? "Выбери упражнение" : "Выбери упражнения")
+                        .headline24Semibold()
                 }
+                .padding(.horizontal, 16)
+
+                AppChipGroup(
+                    items: chipItems,
+                    selected: $selectedMuscleGroup,
+                    titleFor: { $0.displayName }
+                )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
             .padding(.vertical, 12)
 
             Divider()

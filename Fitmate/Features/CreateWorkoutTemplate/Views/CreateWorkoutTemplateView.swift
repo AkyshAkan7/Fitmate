@@ -21,7 +21,8 @@ struct CreateWorkoutTemplateView: View {
                 AppTextField(
                     "Например: Грудь и бицепс",
                     text: $templateName,
-                    title: "Название"
+                    title: "Название",
+                    autoFocus: true
                 )
                 .padding(.top, 16)
 
