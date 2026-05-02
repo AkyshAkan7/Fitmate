@@ -161,6 +161,7 @@ struct WorkoutConfirmView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     WorkoutConfirmView(exercises: [
         Exercise(name: "Жим штанги", subtitle: "Subtitle", muscleGroup: .previewChest),
@@ -169,3 +170,4 @@ struct WorkoutConfirmView: View {
     ])
     .environmentObject(Router())
 }
+#endif

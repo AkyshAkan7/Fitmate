@@ -115,6 +115,7 @@ struct ConfirmWorkoutTemplateView: View {
     }
 }
 
+#if DEBUG
 #Preview {
     ConfirmWorkoutTemplateView(
         templateName: "Грудь и бицепс",
@@ -127,3 +128,4 @@ struct ConfirmWorkoutTemplateView: View {
     )
     .environmentObject(Router())
 }
+#endif

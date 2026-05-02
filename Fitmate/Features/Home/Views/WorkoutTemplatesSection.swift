@@ -89,6 +89,7 @@ struct WorkoutTemplatesSection: View {
     }
 }
 
+#if DEBUG
 #Preview("With Templates") {
     VStack(spacing: 32) {
         WorkoutTemplatesSection()
@@ -108,3 +109,4 @@ struct WorkoutTemplatesSection: View {
         .padding(.horizontal, 16)
     }
 }
+#endif

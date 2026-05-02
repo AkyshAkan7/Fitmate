@@ -304,6 +304,7 @@ struct WorkoutSessionView: View {
 
 // MARK: - Preview
 
+#if DEBUG
 #Preview {
     WorkoutSessionView(exercises: [
         Exercise(name: "Жим штангой", subtitle: "Отрицательный наклон", muscleGroup: .previewChest),
@@ -315,3 +316,4 @@ struct WorkoutSessionView: View {
         Exercise(name: "Брусья", subtitle: "На наклонной скамье", muscleGroup: .previewChest),
     ])
 }
+#endif
