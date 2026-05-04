@@ -16,7 +16,7 @@ enum APIEnvironment {
         case .development:
             URL(string: "https://fitmate-develop.share-prompt.org")!
         case .production:
-            URL(string: "https://api.fitmate.example")!
+            URL(string: "https://fitmate-develop.share-prompt.org")!
         }
     }
 
