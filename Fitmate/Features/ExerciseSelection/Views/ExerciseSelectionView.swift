@@ -120,6 +120,7 @@ struct ExerciseSelectionView: View {
                     }
                 }
                 .padding(.top, 16)
+                .padding(.bottom, 64)
             }
         }
     }

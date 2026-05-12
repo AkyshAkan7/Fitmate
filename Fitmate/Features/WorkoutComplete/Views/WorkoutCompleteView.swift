@@ -12,30 +12,40 @@ struct WorkoutCompleteView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-
-            Image("fitnessStopwatchCartoon")
+            Image("workoutComplete")
                 .resizable()
-                .scaledToFit()
-                .frame(width: 150, height: 150)
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity)
+                .frame(height: 440, alignment: .top)
+                .clipped()
+                .overlay(alignment: .bottom) {
+                    LinearGradient(
+                        colors: [.white.opacity(0), .white],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 160)
+                }
+
+            Image("darkDot")
+                .padding(.top, 24)
 
             Text("Тренировка окончена")
-                .headline20Semibold()
+                .headline24Bold()
                 .foregroundStyle(Color.appBlack)
                 .padding(.top, 16)
 
             Text("Каждая тренировка — шаг к сильному и выносливому себе. Не сдавайся!")
-                .body15Regular()
+                .body17Regular()
                 .foregroundStyle(Color.appGray)
                 .multilineTextAlignment(.center)
                 .padding(.top, 8)
                 .padding(.horizontal, 32)
 
-            Spacer()
-
             AppButton(title: "На главную") {
                 router.popToRoot()
             }
+            .padding(.top, 64)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }

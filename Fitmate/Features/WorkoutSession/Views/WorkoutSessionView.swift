@@ -95,13 +95,15 @@ struct WorkoutSessionView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .alert("Завершение", isPresented: $showFinishAlert) {
-            Button("Нет", role: .cancel) {}
-            Button("Да", role: .none) {
+            Button("Сохранить", role: .cancel) {
                 router.navigate(to: .workoutComplete)
             }
             .keyboardShortcut(.defaultAction)
+            Button("Удалить", role: .destructive) {
+                router.popToRoot()
+            }
         } message: {
-            Text("Все невыполненные упражнения не сохранятся. Точно завершить тренировку?")
+            Text("Все невыполненные упражнения не сохранятся. Сохранить тренировку?")
         }
         .sheet(isPresented: $showAddSetSheet) {
             if let index = selectedSetIndex {
