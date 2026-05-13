@@ -38,6 +38,8 @@ struct MainAppView: View {
                         StrengthProgressView()
                     case .exerciseProgress(let name, let subtitle):
                         ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle)
+                    case .workoutHistory:
+                        WorkoutHistoryView()
                     }
                 }
         }
@@ -51,4 +53,5 @@ struct MainAppView: View {
         .environmentObject(LanguageManager())
         .environmentObject(Router())
         .environmentObject(CustomExerciseStore())
+        .environmentObject(TemplateStore())
 }

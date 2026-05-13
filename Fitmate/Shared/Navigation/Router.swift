@@ -22,6 +22,7 @@ enum Route: Hashable {
     case replaceExercise
     case strengthProgress
     case exerciseProgress(name: String, subtitle: String)
+    case workoutHistory
 }
 
 // MARK: - Router

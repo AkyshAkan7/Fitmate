@@ -32,9 +32,11 @@ struct HomeBannerView: View {
                 .scaledToFit()
                 .frame(height: 240)
                 .offset(x: 26)
+                .allowsHitTesting(false)
         }
         .background(Color.yellow)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .contentShape(RoundedRectangle(cornerRadius: 16))
         .overlay(alignment: .topTrailing) {
             Button {
                 onClose?()

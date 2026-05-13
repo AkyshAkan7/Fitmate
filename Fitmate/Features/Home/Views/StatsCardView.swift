@@ -13,32 +13,30 @@ struct StatsCardView: View {
     var action: (() -> Void)? = nil
 
     var body: some View {
-        Button {
-            action?()
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .body15Regular()
-                        .foregroundColor(.primary)
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .body15Regular()
+                    .foregroundColor(.primary)
 
-                    Text(subtitle)
-                        .body13Regular()
-                        .foregroundColor(.appGray)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .bold))
+                Text(subtitle)
+                    .body13Regular()
                     .foregroundColor(.appGray)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.lightGray)
-            .contentShape(Rectangle())
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.appGray)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.lightGray)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            action?()
+        }
     }
 }
 

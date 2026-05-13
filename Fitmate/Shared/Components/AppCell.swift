@@ -72,17 +72,17 @@ struct AppCell: View {
         if iconURL != nil {
             CachedAsyncImage(
                 url: iconURL,
-                content: { image in image.resizable().scaledToFill() },
+                content: { image in image.resizable().scaledToFit() },
                 placeholder: { Color.lightGray }
             )
-            .frame(width: 48, height: 48)
+            .frame(width: 52, height: 52)
             .background(Color.lightGray)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         } else if let icon {
             icon
                 .resizable()
                 .scaledToFit()
-                .frame(width: 48, height: 48)
+                .frame(width: 52, height: 52)
                 .background(Color.lightGray)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }

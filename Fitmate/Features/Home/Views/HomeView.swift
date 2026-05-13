@@ -56,15 +56,15 @@ struct HomeView: View {
                         ) {
                             router.navigate(to: .strengthProgress)
                         }
-                        
+
                         Divider()
                             .padding(.leading, 16)
-                        
+
                         StatsCardView(
                             title: "История тренировок",
                             subtitle: "Завершено тренировок: 56"
                         ) {
-                            print("tap")
+                            router.navigate(to: .workoutHistory)
                         }
                     }
                     .cornerRadius(16)
@@ -107,4 +107,5 @@ struct HomeView: View {
     HomeView()
         .environmentObject(AuthManager())
         .environmentObject(Router())
+        .environmentObject(TemplateStore())
 }

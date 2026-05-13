@@ -12,28 +12,17 @@ struct WorkoutCompleteView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            Spacer()
+
             Image("workoutComplete")
                 .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(maxWidth: .infinity)
-                .frame(height: 440, alignment: .top)
-                .clipped()
-                .overlay(alignment: .bottom) {
-                    LinearGradient(
-                        colors: [.white.opacity(0), .white],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 160)
-                }
-
-            Image("darkDot")
-                .padding(.top, 24)
+                .scaledToFit()
+                .frame(width: 200, height: 200)
 
             Text("Тренировка окончена")
                 .headline24Bold()
                 .foregroundStyle(Color.appBlack)
-                .padding(.top, 16)
+                .padding(.top, 24)
 
             Text("Каждая тренировка — шаг к сильному и выносливому себе. Не сдавайся!")
                 .body17Regular()
@@ -42,10 +31,11 @@ struct WorkoutCompleteView: View {
                 .padding(.top, 8)
                 .padding(.horizontal, 32)
 
+            Spacer()
+
             AppButton(title: "На главную") {
                 router.popToRoot()
             }
-            .padding(.top, 64)
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
