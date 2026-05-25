@@ -31,12 +31,20 @@ struct MuscleGroup: Identifiable, Hashable {
 
 struct Exercise: Identifiable, Hashable {
     let id = UUID()
+    let catalogId: String?
     let name: String
     let subtitle: String
     let muscleGroup: MuscleGroup
     let imageURL: URL?
 
-    init(name: String, subtitle: String, muscleGroup: MuscleGroup, imageURL: URL? = nil) {
+    init(
+        catalogId: String? = nil,
+        name: String,
+        subtitle: String,
+        muscleGroup: MuscleGroup,
+        imageURL: URL? = nil
+    ) {
+        self.catalogId = catalogId
         self.name = name
         self.subtitle = subtitle
         self.muscleGroup = muscleGroup

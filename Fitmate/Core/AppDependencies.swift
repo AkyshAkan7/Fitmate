@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 @MainActor
 enum AppDependencies {
@@ -15,4 +16,13 @@ enum AppDependencies {
     // Services
     static let exerciseService: ExerciseService = DefaultExerciseService(client: apiClient)
     static let authService: AuthService = DefaultAuthService(client: apiClient, tokenStorage: tokenStorage)
+
+    // Repositories (требуют ModelContext — инстанцируются на месте использования)
+    static func workoutHistoryRepository(context: ModelContext) -> WorkoutHistoryRepository {
+        SwiftDataWorkoutHistoryRepository(context: context)
+    }
+
+    static func exerciseCatalogRepository(context: ModelContext) -> ExerciseCatalogRepository {
+        SwiftDataExerciseCatalogRepository(context: context, service: exerciseService)
+    }
 }

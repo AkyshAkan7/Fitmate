@@ -4,21 +4,21 @@
     "" : {
 
     },
+    "%@ кг x %lld" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ кг x %2$lld"
+          }
+        }
+      }
+    },
     "%lld" : {
 
     },
     "%lld кг" : {
 
-    },
-    "%lld кг x %lld" : {
-      "localizations" : {
-        "ru" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld кг x %2$lld"
-          }
-        }
-      }
     },
     "%lld подход" : {
 

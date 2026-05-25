@@ -6,12 +6,57 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var templateStore: TemplateStore
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
+
+    @Query private var workouts: [WorkoutLocal]
+
+    private var completedWorkoutsCount: Int {
+        workouts.filter { $0.endedAt != nil }.count
+    }
+
+    private var distinctExercisesCount: Int {
+        let keys = workouts
+            .flatMap { $0.exercises }
+            .map { ex -> String in
+                ex.exerciseId.isEmpty ? "name:\(ex.exerciseName)" : "id:\(ex.exerciseId)"
+            }
+        return Set(keys).count
+    }
+
+    private var weekStatuses: [DayStatus] {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekday = calendar.component(.weekday, from: today)
+        let mondayOffset = (weekday + 5) % 7
+        guard let monday = calendar.date(byAdding: .day, value: -mondayOffset, to: today) else {
+            return []
+        }
+        let mondayStart = calendar.startOfDay(for: monday)
+
+        return (0..<7).map { offset in
+            guard
+                let dayStart = calendar.date(byAdding: .day, value: offset, to: mondayStart),
+                let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)
+            else {
+                return .none
+            }
+
+            let hasWorkout = workouts.contains { workout in
+                guard let endedAt = workout.endedAt else { return false }
+                return endedAt >= dayStart && endedAt < dayEnd
+            }
+
+            if hasWorkout { return .green }
+            if calendar.isDateInToday(dayStart) { return .yellow }
+            return .none
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -46,13 +91,13 @@ struct HomeView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    WeekDayView()
+                    WeekDayView(dayStatuses: weekStatuses)
                         .padding(.top, 16)
                     
                     VStack(spacing: 0) {
                         StatsCardView(
                             title: "Прогресс силовых",
-                            subtitle: "Упражнений: 12"
+                            subtitle: "Упражнений: \(distinctExercisesCount)"
                         ) {
                             router.navigate(to: .strengthProgress)
                         }
@@ -62,7 +107,7 @@ struct HomeView: View {
 
                         StatsCardView(
                             title: "История тренировок",
-                            subtitle: "Завершено тренировок: 56"
+                            subtitle: "Завершено тренировок: \(completedWorkoutsCount)"
                         ) {
                             router.navigate(to: .workoutHistory)
                         }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // MARK: - Period
 
@@ -25,27 +26,31 @@ enum WorkoutHistoryPeriod: Hashable, CaseIterable {
         case .year: return "За год"
         }
     }
+
+    var days: Int {
+        switch self {
+        case .twoWeeks: return 14
+        case .month: return 30
+        case .threeMonths: return 90
+        case .sixMonths: return 180
+        case .year: return 365
+        }
+    }
 }
 
-// MARK: - Item
+// MARK: - UI transport models
 
 struct WorkoutHistorySet: Hashable {
-    let weight: Int
+    let weight: Double
     let reps: Int
 }
 
 struct WorkoutHistoryItem: Identifiable, Hashable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let subtitle: String
     let dateLabel: String
-    var sets: [WorkoutHistorySet] = [
-        .init(weight: 30, reps: 10),
-        .init(weight: 50, reps: 10),
-        .init(weight: 30, reps: 10),
-        .init(weight: 50, reps: 10),
-        .init(weight: 40, reps: 10)
-    ]
+    let sets: [WorkoutHistorySet]
 }
 
 // MARK: - View
@@ -53,31 +58,54 @@ struct WorkoutHistoryItem: Identifiable, Hashable {
 struct WorkoutHistoryView: View {
     @Environment(\.dismiss) private var dismiss
 
+    @Query(sort: \WorkoutLocal.startedAt, order: .reverse)
+    private var workouts: [WorkoutLocal]
+
     @State private var selectedPeriod: WorkoutHistoryPeriod = .twoWeeks
     @State private var selectedItem: WorkoutHistoryItem?
-    @State var items: [WorkoutHistoryItem] = [
-        .init(name: "Жим штангой", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим гантелями", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим штангой", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим гантелями", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Тяга штангой", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля")
-    ]
+
+    private var filteredWorkouts: [WorkoutLocal] {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -selectedPeriod.days, to: .now) ?? .distantPast
+        return workouts.filter { $0.startedAt >= cutoff }
+    }
+
+    private var historyItems: [WorkoutHistoryItem] {
+        filteredWorkouts.flatMap { workout -> [WorkoutHistoryItem] in
+            let label = Self.formatDate(workout.startedAt)
+            return workout.exercises
+                .sorted { $0.sortOrder < $1.sortOrder }
+                .map { ex in
+                    WorkoutHistoryItem(
+                        id: ex.id,
+                        name: ex.exerciseName,
+                        subtitle: ex.exerciseSubtitle,
+                        dateLabel: label,
+                        sets: ex.sets
+                            .sorted { $0.createdAt < $1.createdAt }
+                            .map { WorkoutHistorySet(weight: $0.weight, reps: $0.reps) }
+                    )
+                }
+        }
+    }
 
     private var groupedItems: [(label: String, items: [WorkoutHistoryItem])] {
-        let groups = Dictionary(grouping: items, by: \.dateLabel)
-        return groups
-            .map { (label: $0.key, items: $0.value) }
-            .sorted { $0.label < $1.label }
+        var seenLabels: [String] = []
+        var groups: [String: [WorkoutHistoryItem]] = [:]
+        for item in historyItems {
+            if groups[item.dateLabel] == nil {
+                seenLabels.append(item.dateLabel)
+                groups[item.dateLabel] = []
+            }
+            groups[item.dateLabel]?.append(item)
+        }
+        return seenLabels.map { (label: $0, items: groups[$0] ?? []) }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
 
-            if items.isEmpty {
+            if historyItems.isEmpty {
                 emptyState
             } else {
                 content
@@ -92,7 +120,6 @@ struct WorkoutHistoryView: View {
     }
 
     private func sheetHeight(for item: WorkoutHistoryItem) -> CGFloat {
-        // header + divider + cells + bottom padding
         let headerHeight: CGFloat = 110
         let cellHeight: CGFloat = 44
         let trailing: CGFloat = 32
@@ -178,23 +205,20 @@ struct WorkoutHistoryView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+
+    // MARK: - Helpers
+
+    private static func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ru_RU")
+        formatter.dateFormat = "EEEE, d MMMM"
+        let raw = formatter.string(from: date)
+        return raw.prefix(1).uppercased() + raw.dropFirst()
+    }
 }
 
 // MARK: - Previews
 
-#Preview("Empty") {
+#Preview {
     WorkoutHistoryView()
-}
-
-#Preview("Filled") {
-    WorkoutHistoryView(items: [
-        .init(name: "Жим штангой", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим гантелями", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим штангой", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Жим гантелями", subtitle: "В наклоне", dateLabel: "Понедельник, 6 апреля"),
-        .init(name: "Тяга штангой", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля"),
-        .init(name: "Тяга гантелями", subtitle: "В наклоне", dateLabel: "Пятница, 3 апреля")
-    ])
 }

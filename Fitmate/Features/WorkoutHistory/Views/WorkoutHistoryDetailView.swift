@@ -28,7 +28,7 @@ struct WorkoutHistoryDetailView: View {
 
                         Spacer()
 
-                        Text("\(set.weight) кг x \(set.reps)")
+                        Text("\(set.weight.formatted) кг x \(set.reps)")
                             .body15Regular()
                             .foregroundStyle(Color.appBlack)
                     }
@@ -60,9 +60,15 @@ struct WorkoutHistoryDetailView: View {
 #Preview {
     WorkoutHistoryDetailView(
         item: WorkoutHistoryItem(
+            id: UUID(),
             name: "Жим штангой",
             subtitle: "В наклоне",
-            dateLabel: "Понедельник, 6 апреля"
+            dateLabel: "Понедельник, 6 апреля",
+            sets: [
+                WorkoutHistorySet(weight: 30, reps: 10),
+                WorkoutHistorySet(weight: 50, reps: 10),
+                WorkoutHistorySet(weight: 40, reps: 8)
+            ]
         )
     )
 }

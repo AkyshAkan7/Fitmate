@@ -6,14 +6,17 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // MARK: - WorkoutSessionView
 
 struct WorkoutSessionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: Router
 
     @State private var exerciseSessions: [ExerciseSession]
+    @State private var startedAt: Date
     @State private var selectedIndex: Int = 0
     @State private var showFinishAlert: Bool = false
     @State private var showAddSetSheet: Bool = false
@@ -31,6 +34,7 @@ struct WorkoutSessionView: View {
             )
         }
         _exerciseSessions = State(initialValue: sessions)
+        _startedAt = State(initialValue: .now)
     }
 
     // MARK: - Computed Properties
@@ -74,6 +78,42 @@ struct WorkoutSessionView: View {
         showFinishAlert = true
     }
 
+    private func saveWorkout() {
+        let workout = WorkoutLocal(
+            startedAt: startedAt,
+            endedAt: .now,
+            synced: false
+        )
+
+        for (index, session) in exerciseSessions.enumerated() where !session.sets.isEmpty {
+            let workoutExercise = WorkoutExerciseLocal(
+                exerciseId: session.exercise.catalogId ?? "",
+                sortOrder: index,
+                exerciseName: session.exercise.name,
+                exerciseSubtitle: session.exercise.subtitle,
+                exerciseImageLink: session.exercise.imageURL?.absoluteString
+            )
+            workoutExercise.workout = workout
+
+            for set in session.sets {
+                let setLocal = WorkoutSetLocal(
+                    weight: set.weight,
+                    reps: set.reps
+                )
+                setLocal.exercise = workoutExercise
+            }
+        }
+
+        guard !workout.exercises.isEmpty else { return }
+
+        do {
+            let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+            try repository.save(workout)
+        } catch {
+            print("Failed to save workout: \(error)")
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -96,6 +136,7 @@ struct WorkoutSessionView: View {
         .toolbar(.hidden, for: .navigationBar)
         .alert("Завершение", isPresented: $showFinishAlert) {
             Button("Сохранить", role: .cancel) {
+                saveWorkout()
                 router.navigate(to: .workoutComplete)
             }
             .keyboardShortcut(.defaultAction)

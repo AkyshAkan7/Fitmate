@@ -22,6 +22,7 @@ enum ExerciseSelectionMode: Hashable {
 
 struct ExerciseSelectionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var customExerciseStore: CustomExerciseStore
 
@@ -67,7 +68,11 @@ struct ExerciseSelectionView: View {
             bottomButton
         }
         .toolbar(.hidden, for: .navigationBar)
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load(
+                repository: AppDependencies.exerciseCatalogRepository(context: modelContext)
+            )
+        }
         .onChange(of: viewModel.availableGroups) { _, groups in
             guard let first = groups.first else { return }
             if selectedMuscleGroup == .custom, customExerciseStore.exercises.isEmpty {
@@ -102,7 +107,11 @@ struct ExerciseSelectionView: View {
                     .foregroundStyle(Color.appGray)
                     .multilineTextAlignment(.center)
                 Button("Повторить") {
-                    Task { await viewModel.load() }
+                    Task {
+                        await viewModel.load(
+                            repository: AppDependencies.exerciseCatalogRepository(context: modelContext)
+                        )
+                    }
                 }
                 .body15Semibold()
                 .foregroundStyle(.blue)

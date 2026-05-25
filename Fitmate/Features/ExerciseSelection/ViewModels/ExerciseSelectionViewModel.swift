@@ -22,16 +22,6 @@ final class ExerciseSelectionViewModel {
     private(set) var availableGroups: [MuscleGroup] = []
     private(set) var exercisesByGroup: [MuscleGroup: [Exercise]] = [:]
 
-    private let service: ExerciseService
-
-    init() {
-        self.service = AppDependencies.exerciseService
-    }
-
-    init(service: ExerciseService) {
-        self.service = service
-    }
-
     var allExercises: [Exercise] {
         availableGroups.flatMap { exercisesByGroup[$0] ?? [] }
     }
@@ -40,36 +30,49 @@ final class ExerciseSelectionViewModel {
         exercisesByGroup[group] ?? []
     }
 
-    func load() async {
-        if case .loaded = state { return }
-        state = .loading
-        do {
-            let sections = try await service.fetchMuscleGroups()
-            apply(sections)
+    func load(repository: ExerciseCatalogRepository) async {
+        // 1. Сначала — кеш (мгновенно, если есть).
+        if let cached = try? repository.cachedMuscleGroups(), !cached.isEmpty {
+            apply(local: cached)
             state = .loaded
+        } else if exercisesByGroup.isEmpty {
+            state = .loading
+        }
+
+        // 2. Затем — refresh с сети.
+        do {
+            try await repository.refreshFromNetwork()
+            if let updated = try? repository.cachedMuscleGroups() {
+                apply(local: updated)
+                state = .loaded
+            }
         } catch {
-            state = .failed(error.localizedDescription)
+            // Если кеш уже отрисован — молча оставляем его.
+            if exercisesByGroup.isEmpty {
+                state = .failed(error.localizedDescription)
+            }
         }
     }
 
-    private func apply(_ sections: [MuscleGroupSection]) {
-        var groups: [MuscleGroup] = []
+    private func apply(local groups: [MuscleGroupLocal]) {
+        var availableGroups: [MuscleGroup] = []
         var byGroup: [MuscleGroup: [Exercise]] = [:]
 
-        for section in sections {
-            let group = MuscleGroup(id: section.id, name: section.name, nameRu: section.nameRu)
-            groups.append(group)
-            byGroup[group] = section.exercises.map {
+        for local in groups {
+            let group = MuscleGroup(id: local.id, name: local.name, nameRu: local.nameRu)
+            availableGroups.append(group)
+            byGroup[group] = local.exercises.map { ex in
                 Exercise(
-                    name: $0.nameRu,
-                    subtitle: $0.subtitleRu,
+                    catalogId: ex.id,
+                    name: ex.nameRu,
+                    subtitle: ex.subtitleRu,
                     muscleGroup: group,
-                    imageURL: $0.imageLink.flatMap { URL(string: $0) }
+                    imageURL: ex.imageLink.flatMap { URL(string: $0) }
                 )
             }
         }
 
-        availableGroups = groups
-        exercisesByGroup = byGroup
+        self.availableGroups = availableGroups
+        self.exercisesByGroup = byGroup
     }
 }
