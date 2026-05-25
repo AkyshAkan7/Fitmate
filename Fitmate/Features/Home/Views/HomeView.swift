@@ -163,6 +163,9 @@ struct HomeView: View {
         }
         .background(Color.clear)
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            autoFinishStaleWorkouts()
+        }
         .alert("Уже есть активная тренировка", isPresented: $showActiveWorkoutAlert) {
             Button("Нет", role: .cancel) {
                 pendingAction = nil
@@ -225,6 +228,31 @@ struct HomeView: View {
             performStart(action)
         }
         pendingAction = nil
+    }
+
+    /// Тренировка длиннее 3 часов — автоматом завершаем (`endedAt = startedAt + 3h`).
+    /// Если за это время не было ни одного подхода — удаляем целиком.
+    private func autoFinishStaleWorkouts() {
+        let threeHours: TimeInterval = 3 * 60 * 60
+        let threshold = Date().addingTimeInterval(-threeHours)
+        var didChange = false
+
+        for workout in workouts where workout.endedAt == nil && workout.startedAt < threshold {
+            let hasAnySets = workout.exercises.contains { !$0.sets.isEmpty }
+            if hasAnySets {
+                for ex in workout.exercises where ex.sets.isEmpty {
+                    modelContext.delete(ex)
+                }
+                workout.endedAt = workout.startedAt.addingTimeInterval(threeHours)
+            } else {
+                modelContext.delete(workout)
+            }
+            didChange = true
+        }
+
+        if didChange {
+            try? modelContext.save()
+        }
     }
 }
 

@@ -6,53 +6,111 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct StrengthProgressView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var router: Router
 
-    // Локальные группы для чипов. Подключим к данным позже.
-    private let groups: [MuscleGroup] = [
-        MuscleGroup(id: "chest", name: "Chest", nameRu: "Грудь"),
-        MuscleGroup(id: "back", name: "Back", nameRu: "Спина"),
-        MuscleGroup(id: "arms", name: "Arms", nameRu: "Руки"),
-        MuscleGroup(id: "legs", name: "Legs", nameRu: "Ноги"),
-        MuscleGroup(id: "shoulders", name: "Shoulders", nameRu: "Плечи"),
-    ]
+    @Query(sort: \MuscleGroupLocal.nameRu)
+    private var allMuscleGroups: [MuscleGroupLocal]
 
-    // Мок-список упражнений по группам — пока что для проверки перехода.
-    private let mockExercises: [(name: String, subtitle: String)] = [
-        ("Жим штангой", "В наклоне на хуй"),
-        ("Жим гантелей", "На наклонной скамье"),
-        ("Разводка гантелей", "На горизонтальной скамье"),
-    ]
+    @Query(sort: \ExerciseLocal.nameRu)
+    private var allExercises: [ExerciseLocal]
 
-    @State private var selectedGroup: MuscleGroup
+    @Query private var workouts: [WorkoutLocal]
 
-    init() {
-        _selectedGroup = State(initialValue: MuscleGroup(id: "chest", name: "Chest", nameRu: "Грудь"))
+    @State private var selectedGroup: MuscleGroup?
+
+    // ID упражнений, которые юзер реально делал в завершённых тренировках
+    private var doneExerciseIds: Set<String> {
+        Set(
+            workouts
+                .filter { $0.endedAt != nil }
+                .flatMap { $0.exercises }
+                .map { $0.exerciseId }
+                .filter { !$0.isEmpty }
+        )
+    }
+
+    // Группы, в которых есть хоть одно сделанное упражнение
+    private var availableGroups: [MuscleGroup] {
+        let doneGroupIds = Set(
+            allExercises
+                .filter { doneExerciseIds.contains($0.id) }
+                .compactMap { $0.muscleGroup?.id }
+        )
+        return allMuscleGroups
+            .filter { doneGroupIds.contains($0.id) }
+            .map { MuscleGroup(id: $0.id, name: $0.name, nameRu: $0.nameRu) }
+    }
+
+    // Упражнения выбранной группы, которые юзер делал
+    private var groupExercises: [ExerciseLocal] {
+        guard let group = selectedGroup ?? availableGroups.first else { return [] }
+        return allExercises.filter { ex in
+            ex.muscleGroup?.id == group.id && doneExerciseIds.contains(ex.id)
+        }
     }
 
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(mockExercises, id: \.name) { exercise in
-                        AppCell(
-                            title: exercise.name,
-                            subtitle: exercise.subtitle,
-                            trailingIcon: Image("chevronRight")
-                        ) {
-                            router.navigate(to: .exerciseProgress(name: exercise.name, subtitle: exercise.subtitle))
-                        }
-                    }
-                }
-                .padding(.top, 16)
+            if availableGroups.isEmpty {
+                emptyState
+            } else {
+                content
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            if selectedGroup == nil {
+                selectedGroup = availableGroups.first
+            }
+        }
+        .onChange(of: availableGroups) { _, new in
+            if let current = selectedGroup {
+                if !new.contains(current) {
+                    selectedGroup = new.first
+                }
+            } else {
+                selectedGroup = new.first
+            }
+        }
+    }
+
+    // MARK: - Content
+
+    private var content: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                ForEach(groupExercises) { exercise in
+                    AppCell(
+                        iconURL: exercise.imageLink.flatMap { URL(string: $0) },
+                        title: exercise.nameRu,
+                        subtitle: exercise.subtitleRu,
+                        trailingIcon: Image("chevronRight")
+                    ) {
+                        router.navigate(to: .exerciseProgress(name: exercise.nameRu, subtitle: exercise.subtitleRu))
+                    }
+                }
+            }
+            .padding(.top, 16)
+        }
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack {
+            Spacer()
+            Text("Нет данных")
+                .body15Regular()
+                .foregroundStyle(Color.appGray)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Navigation Bar
@@ -74,11 +132,16 @@ struct StrengthProgressView: View {
                 }
                 .padding(.horizontal, 16)
 
-                AppChipGroup(
-                    items: groups,
-                    selected: $selectedGroup,
-                    titleFor: { $0.displayName }
-                )
+                if !availableGroups.isEmpty {
+                    AppChipGroup(
+                        items: availableGroups,
+                        selected: Binding(
+                            get: { selectedGroup ?? availableGroups[0] },
+                            set: { selectedGroup = $0 }
+                        ),
+                        titleFor: { $0.displayName }
+                    )
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
