@@ -30,6 +30,13 @@ final class SwiftDataWorkoutHistoryRepository: WorkoutHistoryRepository {
         return try context.fetch(descriptor).first
     }
 
+    func find(id: UUID) throws -> WorkoutLocal? {
+        let descriptor = FetchDescriptor<WorkoutLocal>(
+            predicate: #Predicate { $0.id == id }
+        )
+        return try context.fetch(descriptor).first
+    }
+
     func save(_ workout: WorkoutLocal) throws {
         if workout.modelContext == nil {
             context.insert(workout)

@@ -8,13 +8,26 @@
 import SwiftUI
 import SwiftData
 
+private enum PendingStartAction {
+    case quickStart
+    case template(exercises: [Exercise])
+}
+
 struct HomeView: View {
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var templateStore: TemplateStore
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
 
     @Query private var workouts: [WorkoutLocal]
+
+    @State private var pendingAction: PendingStartAction?
+    @State private var showActiveWorkoutAlert: Bool = false
+
+    private var activeWorkout: WorkoutLocal? {
+        workouts.first { $0.endedAt == nil }
+    }
 
     private var completedWorkoutsCount: Int {
         workouts.filter { $0.endedAt != nil }.count
@@ -130,21 +143,88 @@ struct HomeView: View {
                             router.navigate(to: .createTemplate)
                         },
                         onTemplateTap: { template in
-                            router.navigate(to: .workoutConfirm(exercises: template.exercises))
+                            startWorkout(.template(exercises: template.exercises))
                         }
                     )
                     .padding(.top, 24)
-                    
+
                     AppButton(title: "Быстрый старт", type: .secondary) {
-                        router.navigate(to: .exerciseSelection(mode: .workout))
+                        startWorkout(.quickStart)
                     }
                     .padding(.top, 24)
+
+                    if activeWorkout != nil {
+                        activeWorkoutBanner
+                            .padding(.top, 16)
+                    }
                 }
             }
             .padding(.horizontal, 16)
         }
         .background(Color.clear)
         .toolbar(.hidden, for: .navigationBar)
+        .alert("Уже есть активная тренировка", isPresented: $showActiveWorkoutAlert) {
+            Button("Нет", role: .cancel) {
+                pendingAction = nil
+            }
+            Button("Да") {
+                deleteActiveAndProceed()
+            }
+            .keyboardShortcut(.defaultAction)
+        } message: {
+            Text("Хотите завершить текущую и создать новую? Все невыполненные упражнения не сохранятся")
+        }
+    }
+
+    // MARK: - Active Workout Banner
+
+    @ViewBuilder
+    private var activeWorkoutBanner: some View {
+        if let workout = activeWorkout {
+            VStack(spacing: 12) {
+                Text("Активная тренировка")
+                    .body15Semibold()
+                    .foregroundStyle(Color.appBlack)
+
+                AppButton(title: "Открыть") {
+                    router.navigate(to: .workoutSessionResume(workoutId: workout.id))
+                }
+            }
+            .padding(16)
+            .background(Color.yellow)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+        }
+    }
+
+    // MARK: - Actions
+
+    private func startWorkout(_ action: PendingStartAction) {
+        if activeWorkout == nil {
+            performStart(action)
+        } else {
+            pendingAction = action
+            showActiveWorkoutAlert = true
+        }
+    }
+
+    private func performStart(_ action: PendingStartAction) {
+        switch action {
+        case .quickStart:
+            router.navigate(to: .exerciseSelection(mode: .workout))
+        case .template(let exercises):
+            router.navigate(to: .workoutConfirm(exercises: exercises))
+        }
+    }
+
+    private func deleteActiveAndProceed() {
+        if let workout = activeWorkout {
+            modelContext.delete(workout)
+            try? modelContext.save()
+        }
+        if let action = pendingAction {
+            performStart(action)
+        }
+        pendingAction = nil
     }
 }
 

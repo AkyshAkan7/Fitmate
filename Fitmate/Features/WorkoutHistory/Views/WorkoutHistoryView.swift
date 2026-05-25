@@ -66,12 +66,16 @@ struct WorkoutHistoryView: View {
 
     private var filteredWorkouts: [WorkoutLocal] {
         let cutoff = Calendar.current.date(byAdding: .day, value: -selectedPeriod.days, to: .now) ?? .distantPast
-        return workouts.filter { $0.startedAt >= cutoff }
+        return workouts.filter { workout in
+            guard let endedAt = workout.endedAt else { return false }
+            return endedAt >= cutoff
+        }
     }
 
     private var historyItems: [WorkoutHistoryItem] {
         filteredWorkouts.flatMap { workout -> [WorkoutHistoryItem] in
-            let label = Self.formatDate(workout.startedAt)
+            let referenceDate = workout.endedAt ?? workout.startedAt
+            let label = Self.formatDate(referenceDate)
             return workout.exercises
                 .sorted { $0.sortOrder < $1.sortOrder }
                 .map { ex in

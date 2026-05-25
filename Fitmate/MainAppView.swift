@@ -24,6 +24,8 @@ struct MainAppView: View {
                         WorkoutConfirmView(exercises: exercises)
                     case .workoutSession(let exercises):
                         WorkoutSessionView(exercises: exercises)
+                    case .workoutSessionResume(let workoutId):
+                        WorkoutSessionView(workoutId: workoutId)
                     case .workoutComplete:
                         WorkoutCompleteView()
                     case .createTemplate:

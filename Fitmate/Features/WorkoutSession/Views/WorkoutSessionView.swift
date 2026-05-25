@@ -17,6 +17,8 @@ struct WorkoutSessionView: View {
 
     @State private var exerciseSessions: [ExerciseSession]
     @State private var startedAt: Date
+    @State private var activeWorkoutId: UUID?
+    @State private var resumeWorkoutId: UUID?
     @State private var selectedIndex: Int = 0
     @State private var showFinishAlert: Bool = false
     @State private var showAddSetSheet: Bool = false
@@ -35,6 +37,15 @@ struct WorkoutSessionView: View {
         }
         _exerciseSessions = State(initialValue: sessions)
         _startedAt = State(initialValue: .now)
+        _activeWorkoutId = State(initialValue: nil)
+        _resumeWorkoutId = State(initialValue: nil)
+    }
+
+    init(workoutId: UUID) {
+        _exerciseSessions = State(initialValue: [])
+        _startedAt = State(initialValue: .now)
+        _activeWorkoutId = State(initialValue: nil)
+        _resumeWorkoutId = State(initialValue: workoutId)
     }
 
     // MARK: - Computed Properties
@@ -58,15 +69,18 @@ struct WorkoutSessionView: View {
     private func addSet(weight: Double, reps: Int) {
         let newSet = WorkoutSet(weight: weight, reps: reps)
         exerciseSessions[selectedIndex].sets.append(newSet)
+        persistCurrentState()
     }
 
     private func updateSet(at index: Int, weight: Double, reps: Int) {
         exerciseSessions[selectedIndex].sets[index].weight = weight
         exerciseSessions[selectedIndex].sets[index].reps = reps
+        persistCurrentState()
     }
 
     private func deleteSet(at index: Int) {
         exerciseSessions[selectedIndex].sets.remove(at: index)
+        persistCurrentState()
     }
 
     private func showSetActions(for index: Int) {
@@ -78,14 +92,73 @@ struct WorkoutSessionView: View {
         showFinishAlert = true
     }
 
-    private func saveWorkout() {
-        let workout = WorkoutLocal(
-            startedAt: startedAt,
-            endedAt: .now,
-            synced: false
-        )
+    // MARK: - Persistence
 
-        for (index, session) in exerciseSessions.enumerated() where !session.sets.isEmpty {
+    private func loadFromDB(id: UUID) {
+        let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+        guard let workout = try? repository.find(id: id) else { return }
+
+        startedAt = workout.startedAt
+        activeWorkoutId = workout.id
+        exerciseSessions = workout.exercises
+            .sorted { $0.sortOrder < $1.sortOrder }
+            .map { ex in
+                let exercise = Exercise(
+                    catalogId: ex.exerciseId.isEmpty ? nil : ex.exerciseId,
+                    name: ex.exerciseName,
+                    subtitle: ex.exerciseSubtitle,
+                    muscleGroup: .custom,
+                    imageURL: ex.exerciseImageLink.flatMap { URL(string: $0) }
+                )
+                let sets = ex.sets
+                    .sorted { $0.createdAt < $1.createdAt }
+                    .map { WorkoutSet(weight: $0.weight, reps: $0.reps) }
+                return ExerciseSession(
+                    exercise: exercise,
+                    sets: sets,
+                    lastResult: "0 кг x 0"
+                )
+            }
+    }
+
+    /// Создаёт активную WorkoutLocal сразу при заходе в новую сессию.
+    private func createActiveWorkoutIfNeeded() {
+        guard activeWorkoutId == nil else { return }
+        let workout = WorkoutLocal(startedAt: startedAt, endedAt: nil, synced: false)
+        modelContext.insert(workout)
+        activeWorkoutId = workout.id
+
+        for (index, session) in exerciseSessions.enumerated() {
+            let workoutExercise = WorkoutExerciseLocal(
+                exerciseId: session.exercise.catalogId ?? "",
+                sortOrder: index,
+                exerciseName: session.exercise.name,
+                exerciseSubtitle: session.exercise.subtitle,
+                exerciseImageLink: session.exercise.imageURL?.absoluteString
+            )
+            workoutExercise.workout = workout
+        }
+
+        try? modelContext.save()
+    }
+
+    /// Зеркалит текущее состояние @State в БД (на каждую мутацию подходов/упражнений).
+    private func persistCurrentState() {
+        let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+
+        let workout: WorkoutLocal
+        if let id = activeWorkoutId, let existing = try? repository.find(id: id) {
+            workout = existing
+            for ex in workout.exercises {
+                modelContext.delete(ex)
+            }
+        } else {
+            workout = WorkoutLocal(startedAt: startedAt, endedAt: nil, synced: false)
+            modelContext.insert(workout)
+            activeWorkoutId = workout.id
+        }
+
+        for (index, session) in exerciseSessions.enumerated() {
             let workoutExercise = WorkoutExerciseLocal(
                 exerciseId: session.exercise.catalogId ?? "",
                 sortOrder: index,
@@ -96,22 +169,38 @@ struct WorkoutSessionView: View {
             workoutExercise.workout = workout
 
             for set in session.sets {
-                let setLocal = WorkoutSetLocal(
-                    weight: set.weight,
-                    reps: set.reps
-                )
+                let setLocal = WorkoutSetLocal(weight: set.weight, reps: set.reps)
                 setLocal.exercise = workoutExercise
             }
         }
 
-        guard !workout.exercises.isEmpty else { return }
-
         do {
-            let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
-            try repository.save(workout)
+            try modelContext.save()
         } catch {
-            print("Failed to save workout: \(error)")
+            print("Persist failed: \(error)")
         }
+    }
+
+    private func finishAndSave() {
+        persistCurrentState()
+        guard let id = activeWorkoutId else { return }
+        let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+        guard let workout = try? repository.find(id: id) else { return }
+
+        // Чистим упражнения без подходов — не попадут в историю
+        for ex in workout.exercises where ex.sets.isEmpty {
+            modelContext.delete(ex)
+        }
+
+        workout.endedAt = .now
+        try? modelContext.save()
+    }
+
+    private func finishAndDelete() {
+        guard let id = activeWorkoutId else { return }
+        let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+        try? repository.delete(id: id)
+        activeWorkoutId = nil
     }
 
     // MARK: - Body
@@ -120,27 +209,40 @@ struct WorkoutSessionView: View {
         VStack(spacing: 0) {
             navigationBar
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    exerciseSelector
-                    exerciseInfo
-                        .padding(.top, 16)
-                    lastResultSection
-                    setsSection
+            if exerciseSessions.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        exerciseSelector
+                        exerciseInfo
+                            .padding(.top, 16)
+                        lastResultSection
+                        setsSection
+                    }
+                    .padding(.top, 16)
                 }
-                .padding(.top, 16)
-            }
 
-            bottomButton
+                bottomButton
+            }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            if let id = resumeWorkoutId, activeWorkoutId == nil {
+                loadFromDB(id: id)
+            } else if resumeWorkoutId == nil {
+                createActiveWorkoutIfNeeded()
+            }
+        }
         .alert("Завершение", isPresented: $showFinishAlert) {
             Button("Сохранить", role: .cancel) {
-                saveWorkout()
+                finishAndSave()
                 router.navigate(to: .workoutComplete)
             }
             .keyboardShortcut(.defaultAction)
             Button("Удалить", role: .destructive) {
+                finishAndDelete()
                 router.popToRoot()
             }
         } message: {
@@ -267,6 +369,7 @@ struct WorkoutSessionView: View {
         ) {
             router.onExerciseReplace = { [self] newExercise in
                 exerciseSessions[selectedIndex].exercise = newExercise
+                persistCurrentState()
             }
             router.navigate(to: .replaceExercise)
         }

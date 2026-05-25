@@ -15,6 +15,7 @@ enum Route: Hashable {
     case exerciseSelection(mode: ExerciseSelectionMode)
     case workoutConfirm(exercises: [Exercise])
     case workoutSession(exercises: [Exercise])
+    case workoutSessionResume(workoutId: UUID)
     case workoutComplete
     case createTemplate
     case confirmTemplate(templateName: String, exercises: [Exercise])
