@@ -18,8 +18,8 @@ struct MainAppView: View {
                     switch route {
                     case .profile:
                         ProfileView()
-                    case .exerciseSelection(let mode):
-                        ExerciseSelectionView(mode: mode)
+                    case .exerciseSelection(let mode, let preselected):
+                        ExerciseSelectionView(mode: mode, preselected: preselected)
                     case .workoutConfirm(let exercises):
                         WorkoutConfirmView(exercises: exercises)
                     case .workoutSession(let exercises):

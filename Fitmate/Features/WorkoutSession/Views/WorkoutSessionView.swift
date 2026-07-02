@@ -369,6 +369,7 @@ struct WorkoutSessionView: View {
         ) {
             router.onExerciseReplace = { [self] newExercise in
                 exerciseSessions[selectedIndex].exercise = newExercise
+                exerciseSessions[selectedIndex].sets = []
                 persistCurrentState()
             }
             router.navigate(to: .replaceExercise)

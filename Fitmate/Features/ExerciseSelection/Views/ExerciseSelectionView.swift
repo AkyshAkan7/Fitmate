@@ -27,14 +27,22 @@ struct ExerciseSelectionView: View {
     @EnvironmentObject private var customExerciseStore: CustomExerciseStore
 
     var mode: ExerciseSelectionMode = .workout
+    var preselected: [Exercise] = []
 
     @State private var viewModel = ExerciseSelectionViewModel()
     @State private var selectedMuscleGroup: MuscleGroup = .custom
-    @State private var selectedExercises: Set<UUID> = []
+    @State private var selectedExercises: Set<String> = []
     @State private var selectedExercise: Exercise?
+    @State private var didApplyPreselection = false
 
     private var isReplaceMode: Bool {
         mode == .replace
+    }
+
+    /// Стабильный ключ выбора: `Exercise.id` пересоздаётся при каждой загрузке
+    /// каталога, поэтому серверные упражнения матчим по `catalogId`.
+    private func selectionKey(_ exercise: Exercise) -> String {
+        exercise.catalogId ?? exercise.id.uuidString
     }
 
     private var filteredExercises: [Exercise] {
@@ -72,6 +80,7 @@ struct ExerciseSelectionView: View {
             await viewModel.load(
                 repository: AppDependencies.exerciseCatalogRepository(context: modelContext)
             )
+            applyPreselectionIfNeeded()
         }
         .onChange(of: viewModel.availableGroups) { _, groups in
             guard let first = groups.first else { return }
@@ -187,7 +196,7 @@ struct ExerciseSelectionView: View {
             get: {
                 isReplaceMode
                     ? selectedExercise?.id == exercise.id
-                    : selectedExercises.contains(exercise.id)
+                    : selectedExercises.contains(selectionKey(exercise))
             },
             set: { isSelected in
                 if isReplaceMode {
@@ -201,10 +210,16 @@ struct ExerciseSelectionView: View {
 
     private func toggleExerciseSelection(_ exercise: Exercise, isSelected: Bool) {
         if isSelected {
-            selectedExercises.insert(exercise.id)
+            selectedExercises.insert(selectionKey(exercise))
         } else {
-            selectedExercises.remove(exercise.id)
+            selectedExercises.remove(selectionKey(exercise))
         }
+    }
+
+    private func applyPreselectionIfNeeded() {
+        guard !didApplyPreselection, !preselected.isEmpty else { return }
+        didApplyPreselection = true
+        selectedExercises = Set(preselected.map(selectionKey))
     }
 
     // MARK: - Create Custom Link
@@ -242,10 +257,10 @@ struct ExerciseSelectionView: View {
         return AppButton(title: title, isEnabled: isEnabled) {
             switch mode {
             case .workout:
-                let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
+                let selected = allAvailableExercises.filter { selectedExercises.contains(selectionKey($0)) }
                 router.navigate(to: .workoutConfirm(exercises: selected))
             case .template(let name):
-                let selected = allAvailableExercises.filter { selectedExercises.contains($0.id) }
+                let selected = allAvailableExercises.filter { selectedExercises.contains(selectionKey($0)) }
                 router.navigate(to: .confirmTemplate(templateName: name, exercises: selected))
             case .replace:
                 if let exercise = selectedExercise {

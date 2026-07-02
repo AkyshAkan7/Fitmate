@@ -213,8 +213,10 @@ struct HomeView: View {
     private func performStart(_ action: PendingStartAction) {
         switch action {
         case .quickStart:
-            router.navigate(to: .exerciseSelection(mode: .workout))
+            router.navigate(to: .exerciseSelection(mode: .workout, preselected: []))
         case .template(let exercises):
+            // Кладём выбор упражнений под экран подтверждения — «Изменить» вернёт к нему
+            router.navigate(to: .exerciseSelection(mode: .workout, preselected: exercises))
             router.navigate(to: .workoutConfirm(exercises: exercises))
         }
     }

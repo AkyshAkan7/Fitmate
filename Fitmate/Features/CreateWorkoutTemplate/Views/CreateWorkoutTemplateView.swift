@@ -29,7 +29,7 @@ struct CreateWorkoutTemplateView: View {
                 Spacer()
 
                 AppButton(title: "Добавить упражнения") {
-                    router.navigate(to: .exerciseSelection(mode: .template(name: templateName)))
+                    router.navigate(to: .exerciseSelection(mode: .template(name: templateName), preselected: []))
                 }
                 .padding(.bottom, 16)
             }
