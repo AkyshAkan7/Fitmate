@@ -92,21 +92,27 @@ struct WorkoutConfirmView: View {
                     .animation(.easeInOut(duration: 0.3), value: shouldShowTip)
             }
         }
+        // Гасим подсказку на любое действие: minimumDistance 0 срабатывает
+        // сразу на касание. simultaneousGesture не блокирует List и кнопки.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0).onChanged { _ in
+                if shouldShowTip { dismissTip() }
+            }
+        )
     }
 
     // MARK: - Tip Overlay
 
     private var tipOverlay: some View {
-        GeometryReader { geometry in
-            Color.black.opacity(0.3)
-                .ignoresSafeArea()
-                .onTapGesture(perform: dismissTip)
-
+        VStack(spacing: 0) {
             TipView(text: "Упражнения можно\nпоменять местами", onDismiss: dismissTip)
                 .scaleEffect(showTip ? 1 : 0.8)
                 .opacity(showTip ? 1 : 0)
-                .position(x: geometry.size.width / 2, y: tipYPosition)
+                .padding(.top, tipYPosition)
+
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Navigation Bar
@@ -137,6 +143,7 @@ struct WorkoutConfirmView: View {
 
     private func exerciseRow(_ exercise: Exercise) -> some View {
         AppCell(
+            icon: Image(systemName: "dumbbell"),
             iconURL: exercise.imageURL,
             title: exercise.name,
             subtitle: exercise.subtitle,

@@ -87,6 +87,7 @@ struct StrengthProgressView: View {
             VStack(spacing: 0) {
                 ForEach(groupExercises) { exercise in
                     AppCell(
+                        icon: Image(systemName: "dumbbell"),
                         iconURL: exercise.imageLink.flatMap { URL(string: $0) },
                         title: exercise.nameRu,
                         subtitle: exercise.subtitleRu,

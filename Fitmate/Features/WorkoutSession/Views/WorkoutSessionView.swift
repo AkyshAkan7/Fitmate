@@ -27,6 +27,15 @@ struct WorkoutSessionView: View {
     @State private var showDeleteAlert: Bool = false
     @State private var selectedSetIndex: Int?
 
+    @AppStorage(StorageKeys.hasSeenSwitchTip) private var hasSeenSwitchTip = false
+    @AppStorage(StorageKeys.hasSeenReplaceTip) private var hasSeenReplaceTip = false
+    @State private var activeTip: SessionTip?
+
+    private enum SessionTip {
+        case switching
+        case replace
+    }
+
     init(exercises: [Exercise]) {
         let sessions = exercises.map { exercise in
             ExerciseSession(
@@ -90,6 +99,34 @@ struct WorkoutSessionView: View {
 
     private func finishWorkout() {
         showFinishAlert = true
+    }
+
+    // MARK: - Tips
+
+    private func showTipsIfNeeded() {
+        guard activeTip == nil else { return }
+        let next: SessionTip? = !hasSeenSwitchTip ? .switching : (!hasSeenReplaceTip ? .replace : nil)
+        guard let next else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.easeInOut(duration: 0.3)) { activeTip = next }
+        }
+    }
+
+    private func dismissActiveTip() {
+        guard let tip = activeTip else { return }
+        withAnimation(.easeInOut(duration: 0.3)) { activeTip = nil }
+
+        switch tip {
+        case .switching:
+            hasSeenSwitchTip = true
+            guard !hasSeenReplaceTip else { return }
+            // Задержка, чтобы то же касание не закрыло сразу вторую подсказку
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation(.easeInOut(duration: 0.3)) { activeTip = .replace }
+            }
+        case .replace:
+            hasSeenReplaceTip = true
+        }
     }
 
     // MARK: - Persistence
@@ -218,6 +255,13 @@ struct WorkoutSessionView: View {
                         exerciseSelector
                         exerciseInfo
                             .padding(.top, 16)
+                            .overlay(alignment: .top) {
+                                if activeTip == .switching { switchTip }
+                            }
+                            .overlay(alignment: .trailing) {
+                                if activeTip == .replace { replaceTip }
+                            }
+                            .zIndex(1)
                         lastResultSection
                         setsSection
                     }
@@ -228,12 +272,18 @@ struct WorkoutSessionView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0).onChanged { _ in
+                if activeTip != nil { dismissActiveTip() }
+            }
+        )
         .task {
             if let id = resumeWorkoutId, activeWorkoutId == nil {
                 loadFromDB(id: id)
             } else if resumeWorkoutId == nil {
                 createActiveWorkoutIfNeeded()
             }
+            if !exerciseSessions.isEmpty { showTipsIfNeeded() }
         }
         .alert("Завершение", isPresented: $showFinishAlert) {
             Button("Сохранить", role: .cancel) {
@@ -340,11 +390,22 @@ struct WorkoutSessionView: View {
         Button {
             selectExercise(at: index)
         } label: {
-            CachedAsyncImage(
-                url: session.exercise.imageURL,
-                content: { image in image.resizable().scaledToFill() },
-                placeholder: { Color.lightGray }
-            )
+            Group {
+                if let imageURL = session.exercise.imageURL {
+                    CachedAsyncImage(
+                        url: imageURL,
+                        content: { image in image.resizable().scaledToFill() },
+                        placeholder: { Color.lightGray }
+                    )
+                } else {
+                    // Кастомное упражнение без картинки — гантеля-заглушка
+                    Image(systemName: "dumbbell")
+                        .resizable()
+                        .scaledToFit()
+                        .padding(20)
+                        .foregroundStyle(Color.appBlack)
+                }
+            }
             .frame(width: 72, height: 72)
             .background(Color.lightGray)
             .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -362,6 +423,7 @@ struct WorkoutSessionView: View {
 
     private var exerciseInfo: some View {
         AppCell(
+            icon: Image(systemName: "dumbbell"),
             iconURL: currentSession.exercise.imageURL,
             title: currentSession.exercise.name,
             subtitle: currentSession.exercise.subtitle,
@@ -374,6 +436,29 @@ struct WorkoutSessionView: View {
             }
             router.navigate(to: .replaceExercise)
         }
+    }
+
+    // MARK: - Tips
+
+    /// Подсказка под миниатюрами — про переключение между упражнениями.
+    private var switchTip: some View {
+        TipView(
+            text: "Между упражнениями,\nможно переключаться в\nлюбое время",
+            onDismiss: dismissActiveTip
+        )
+        .fixedSize()
+        .offset(y: 4)
+    }
+
+    /// Подсказка у иконки замены (reload) — слева от неё, стрелкой вправо.
+    private var replaceTip: some View {
+        TipView(
+            text: "Если хочешь заменить\nупражнение, тапай сюда",
+            arrow: .trailing,
+            onDismiss: dismissActiveTip
+        )
+        .fixedSize()
+        .offset(x: -44, y: 8)
     }
 
     // MARK: - Last Result Section

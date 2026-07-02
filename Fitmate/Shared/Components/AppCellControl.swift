@@ -114,12 +114,15 @@ struct AppCellControl: View {
         Group {
             if let staticIcon {
                 staticIcon.resizable().scaledToFit()
-            } else {
+            } else if let iconURL {
                 CachedAsyncImage(
                     url: iconURL,
                     content: { image in image.resizable().scaledToFit() },
                     placeholder: { Color.lightGray }
                 )
+            } else {
+                // Кастомное упражнение без картинки — гантеля-заглушка
+                Image(systemName: "dumbbell").resizable().scaledToFit()
             }
         }
         .frame(width: 52, height: 52)

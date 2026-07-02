@@ -92,6 +92,7 @@ struct ConfirmWorkoutTemplateView: View {
     private func exerciseRow(_ exercise: Exercise) -> some View {
         AppCell(
             icon: Image(systemName: "dumbbell"),
+            iconURL: exercise.imageURL,
             title: exercise.name,
             subtitle: exercise.subtitle,
             trailingIcon: nil

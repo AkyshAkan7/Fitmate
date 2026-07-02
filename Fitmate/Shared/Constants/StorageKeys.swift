@@ -11,5 +11,6 @@ enum StorageKeys {
     static let isAIBannerHidden = "isAIBannerHidden"
     static let appLanguage = "appLanguage"
     static let hasSeenReorderTip = "hasSeenReorderTip"
+    static let hasSeenSwitchTip = "hasSeenSwitchTip"
     static let hasSeenReplaceTip = "hasSeenReplaceTip"
 }
