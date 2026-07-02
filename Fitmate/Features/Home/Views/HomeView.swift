@@ -17,16 +17,34 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var router: Router
-    @EnvironmentObject private var templateStore: TemplateStore
     @AppStorage(StorageKeys.isAIBannerHidden) private var isAIBannerHidden = false
 
     @Query private var workouts: [WorkoutLocal]
+    @Query(sort: \WorkoutTemplateLocal.createdAt, order: .reverse)
+    private var templateModels: [WorkoutTemplateLocal]
 
     @State private var pendingAction: PendingStartAction?
     @State private var showActiveWorkoutAlert: Bool = false
 
     private var activeWorkout: WorkoutLocal? {
         workouts.first { $0.endedAt == nil }
+    }
+
+    private var templates: [WorkoutTemplate] {
+        templateModels.map { model in
+            let exercises = model.exercises
+                .sorted { $0.sortOrder < $1.sortOrder }
+                .map { ex in
+                    Exercise(
+                        catalogId: ex.exerciseId.isEmpty ? nil : ex.exerciseId,
+                        name: ex.exerciseName,
+                        subtitle: ex.exerciseSubtitle,
+                        muscleGroup: .custom,
+                        imageURL: ex.exerciseImageLink.flatMap { URL(string: $0) }
+                    )
+                }
+            return WorkoutTemplate(id: model.id, name: model.name, exercises: exercises)
+        }
     }
 
     private var completedWorkoutsCount: Int {
@@ -138,7 +156,7 @@ struct HomeView: View {
                     }
                     
                     WorkoutTemplatesSection(
-                        templates: templateStore.templates,
+                        templates: templates,
                         onCreateTap: {
                             router.navigate(to: .createTemplate)
                         },
@@ -262,5 +280,4 @@ struct HomeView: View {
     HomeView()
         .environmentObject(AuthManager())
         .environmentObject(Router())
-        .environmentObject(TemplateStore())
 }

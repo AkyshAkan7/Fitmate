@@ -8,9 +8,15 @@
 import SwiftUI
 
 struct WorkoutTemplate: Identifiable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let exercises: [Exercise]
+
+    init(id: UUID = UUID(), name: String, exercises: [Exercise]) {
+        self.id = id
+        self.name = name
+        self.exercises = exercises
+    }
 
     var exerciseCount: Int {
         exercises.count

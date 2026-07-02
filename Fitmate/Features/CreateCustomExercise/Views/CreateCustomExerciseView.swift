@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CreateCustomExerciseView: View {
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var customExerciseStore: CustomExerciseStore
+    @Environment(\.modelContext) private var modelContext
 
     @State private var exerciseName: String = ""
 
@@ -28,7 +29,9 @@ struct CreateCustomExerciseView: View {
                 Spacer()
 
                 AppButton(title: "Добавить", isEnabled: !exerciseName.trimmingCharacters(in: .whitespaces).isEmpty) {
-                    customExerciseStore.add(name: exerciseName)
+                    try? AppDependencies
+                        .customExerciseRepository(context: modelContext)
+                        .save(name: exerciseName)
                     dismiss()
                 }
                 .padding(.bottom, 16)
@@ -66,5 +69,4 @@ struct CreateCustomExerciseView: View {
 
 #Preview {
     CreateCustomExerciseView()
-        .environmentObject(CustomExerciseStore())
 }

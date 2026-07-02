@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ConfirmWorkoutTemplateView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: Router
-    @EnvironmentObject private var templateStore: TemplateStore
 
     @State private var templateName: String
     @State private var exercises: [Exercise]
@@ -106,7 +107,9 @@ struct ConfirmWorkoutTemplateView: View {
             }
 
             AppButton(title: "Сохранить") {
-                templateStore.add(name: templateName, exercises: exercises)
+                try? AppDependencies
+                    .workoutTemplateRepository(context: modelContext)
+                    .save(name: templateName, exercises: exercises)
                 router.popToRoot()
             }
         }

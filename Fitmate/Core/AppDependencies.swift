@@ -25,4 +25,12 @@ enum AppDependencies {
     static func exerciseCatalogRepository(context: ModelContext) -> ExerciseCatalogRepository {
         SwiftDataExerciseCatalogRepository(context: context, service: exerciseService)
     }
+
+    static func workoutTemplateRepository(context: ModelContext) -> WorkoutTemplateRepository {
+        SwiftDataWorkoutTemplateRepository(context: context)
+    }
+
+    static func customExerciseRepository(context: ModelContext) -> CustomExerciseRepository {
+        SwiftDataCustomExerciseRepository(context: context)
+    }
 }

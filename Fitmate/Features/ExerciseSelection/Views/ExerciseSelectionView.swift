@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // MARK: - ExerciseSelectionMode
 
@@ -24,10 +25,12 @@ struct ExerciseSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var router: Router
-    @EnvironmentObject private var customExerciseStore: CustomExerciseStore
 
     var mode: ExerciseSelectionMode = .workout
     var preselected: [Exercise] = []
+
+    @Query(sort: \CustomExerciseLocal.createdAt, order: .reverse)
+    private var customModels: [CustomExerciseLocal]
 
     @State private var viewModel = ExerciseSelectionViewModel()
     @State private var selectedMuscleGroup: MuscleGroup = .custom
@@ -45,20 +48,34 @@ struct ExerciseSelectionView: View {
         exercise.catalogId ?? exercise.id.uuidString
     }
 
+    /// Кастомные упражнения из локальной БД. `id` берём из модели, чтобы
+    /// ключ выбора не менялся при перерисовке.
+    private var customExercises: [Exercise] {
+        customModels.map { model in
+            Exercise(
+                id: model.id,
+                name: model.name,
+                subtitle: model.subtitle,
+                muscleGroup: .custom,
+                imageURL: model.imageLink.flatMap { URL(string: $0) }
+            )
+        }
+    }
+
     private var filteredExercises: [Exercise] {
         if selectedMuscleGroup == .custom {
-            return customExerciseStore.exercises
+            return customExercises
         }
         return viewModel.exercises(for: selectedMuscleGroup)
     }
 
     private var allAvailableExercises: [Exercise] {
-        viewModel.allExercises + customExerciseStore.exercises
+        viewModel.allExercises + customExercises
     }
 
     private var chipItems: [MuscleGroup] {
         let server = viewModel.availableGroups
-        if customExerciseStore.exercises.isEmpty {
+        if customModels.isEmpty {
             return server
         }
         return [.custom] + server
@@ -84,7 +101,7 @@ struct ExerciseSelectionView: View {
         }
         .onChange(of: viewModel.availableGroups) { _, groups in
             guard let first = groups.first else { return }
-            if selectedMuscleGroup == .custom, customExerciseStore.exercises.isEmpty {
+            if selectedMuscleGroup == .custom, customModels.isEmpty {
                 // Стартовое состояние: кастомов нет, грузим серверные — встаём на первую группу
                 selectedMuscleGroup = first
             } else if selectedMuscleGroup != .custom, !groups.contains(selectedMuscleGroup) {
@@ -93,7 +110,7 @@ struct ExerciseSelectionView: View {
             }
         }
         // Switch to "My" tab when a new custom exercise is added
-        .onChange(of: customExerciseStore.exercises.count) { oldCount, newCount in
+        .onChange(of: customModels.count) { oldCount, newCount in
             if newCount > oldCount {
                 selectedMuscleGroup = .custom
             }
@@ -278,5 +295,4 @@ struct ExerciseSelectionView: View {
 #Preview {
     ExerciseSelectionView()
         .environmentObject(Router())
-        .environmentObject(CustomExerciseStore())
 }

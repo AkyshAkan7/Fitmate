@@ -54,6 +54,4 @@ struct MainAppView: View {
         .environmentObject(AuthManager())
         .environmentObject(LanguageManager())
         .environmentObject(Router())
-        .environmentObject(CustomExerciseStore())
-        .environmentObject(TemplateStore())
 }

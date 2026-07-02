@@ -14,7 +14,10 @@ enum AppSchema {
         WorkoutExerciseLocal.self,
         WorkoutSetLocal.self,
         MuscleGroupLocal.self,
-        ExerciseLocal.self
+        ExerciseLocal.self,
+        WorkoutTemplateLocal.self,
+        WorkoutTemplateExerciseLocal.self,
+        CustomExerciseLocal.self
     ]
 
     @MainActor

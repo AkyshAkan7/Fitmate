@@ -15,8 +15,6 @@ struct FitmateApp: App {
     @StateObject private var authManager = AuthManager()
     @StateObject private var languageManager = LanguageManager()
     @StateObject private var router = Router()
-    @StateObject private var templateStore = TemplateStore()
-    @StateObject private var customExerciseStore = CustomExerciseStore()
 
     private let modelContainer = AppSchema.makeContainer()
 
@@ -34,8 +32,6 @@ struct FitmateApp: App {
                 .environmentObject(authManager)
                 .environmentObject(languageManager)
                 .environmentObject(router)
-                .environmentObject(templateStore)
-                .environmentObject(customExerciseStore)
                 .modelContainer(modelContainer)
                 .preferredColorScheme(.light)
             #if DEBUG
