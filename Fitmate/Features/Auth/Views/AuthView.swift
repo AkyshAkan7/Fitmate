@@ -77,10 +77,22 @@ struct BackgroundIllustration: View {
 
 // MARK: - Terms View
 struct TermsView: View {
+    var alignment: TextAlignment = .center
+    var onPrivacyTap: (() -> Void)?
+    var onTermsTap: (() -> Void)?
+
     var body: some View {
         Text(termsText)
             .body11Regular()
-            .multilineTextAlignment(.center)
+            .multilineTextAlignment(alignment)
+            .environment(\.openURL, OpenURLAction { url in
+                switch url.absoluteString {
+                case "fitmate://privacy": onPrivacyTap?()
+                case "fitmate://terms": onTermsTap?()
+                default: break
+                }
+                return .handled
+            })
     }
 
     private var termsText: AttributedString {
@@ -90,6 +102,7 @@ struct TermsView: View {
         var privacy = AttributedString("Политика конфиденциальности")
         privacy.foregroundColor = .appGray
         privacy.underlineStyle = .single
+        privacy.link = URL(string: "fitmate://privacy")
 
         var and = AttributedString("\nи ")
         and.foregroundColor = .appGray
@@ -97,6 +110,7 @@ struct TermsView: View {
         var terms = AttributedString("Пользовательское соглашение")
         terms.foregroundColor = .appGray
         terms.underlineStyle = .single
+        terms.link = URL(string: "fitmate://terms")
 
         return text + privacy + and + terms
     }

@@ -42,6 +42,10 @@ struct MainAppView: View {
                         ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle, exerciseId: exerciseId)
                     case .workoutHistory:
                         WorkoutHistoryView()
+                    case .privacyPolicy:
+                        PrivacyPolicyView()
+                    case .termsOfUse:
+                        TermsOfUseView()
                     }
                 }
         }

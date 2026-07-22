@@ -39,7 +39,8 @@ final class LanguageManager: ObservableObject {
     }
 
     init() {
-        currentLanguage = AppLanguage(rawValue: storedLanguage) ?? .russian
+        let systemCode = Locale.current.language.languageCode?.identifier ?? "en"
+        currentLanguage = AppLanguage(rawValue: systemCode) ?? .english
     }
 
     func setLanguage(_ language: AppLanguage) {

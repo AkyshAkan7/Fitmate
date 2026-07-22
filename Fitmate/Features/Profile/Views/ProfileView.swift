@@ -10,7 +10,9 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var languageManager: LanguageManager
+    @EnvironmentObject private var router: Router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,10 +23,14 @@ struct ProfileView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
-                        subscriptionSection
-                        languageSelector
-                        Spacer()
-                        actionButtons
+                        if authManager.isAuthenticated {
+                            accountCard
+                            Spacer()
+                            actionButtons
+                        } else {
+                            signUpCard
+                            Spacer()
+                        }
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 16)
@@ -57,6 +63,87 @@ struct ProfileView: View {
 
             Divider()
         }
+    }
+
+    // MARK: - Sign Up Card
+
+    private var signUpCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Image("zap")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 28, height: 28)
+
+            Text("Не потеряйте свой прогресс")
+                .body17Semibold()
+                .foregroundStyle(Color.appBlack)
+                .padding(.top, 24)
+
+            Text("Зарегистрируйтесь, чтобы сохранить прогресс тренировок и не потерять свои результаты.")
+                .body13Regular()
+                .foregroundStyle(Color.appGray)
+                .padding(.top, 8)
+
+            SocialSignInButton(type: .apple) {
+                authManager.signIn()
+            }
+            .padding(.top, 16)
+
+            TermsView(
+                alignment: .leading,
+                onPrivacyTap: { router.navigate(to: .privacyPolicy) },
+                onTermsTap: { router.navigate(to: .termsOfUse) }
+            )
+            .padding(.top, 12)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(Color.lightGray)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    // MARK: - Account Card
+
+    private var accountCard: some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Аккаунт")
+                    .body13Regular()
+                    .foregroundStyle(Color.appGray)
+                Text("testing")
+                    .body15Regular()
+                    .foregroundStyle(Color.appBlack)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    openURL(url)
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Язык приложения")
+                            .body13Regular()
+                            .foregroundStyle(Color.appGray)
+                        Text(languageManager.currentLanguage.displayName)
+                            .body15Regular()
+                            .foregroundStyle(Color.appBlack)
+                    }
+
+                    Spacer()
+
+                    Image("chevronRight")
+                }
+                .padding(16)
+            }
+        }
+        .background(Color.lightGray)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 
     // MARK: - Subscription Section
