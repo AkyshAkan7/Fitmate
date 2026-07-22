@@ -19,6 +19,7 @@ struct ExerciseProgressView: View {
     @Query private var workouts: [WorkoutLocal]
 
     @State private var selectedRange: TimeRange = .month1
+    @State private var selectedDate: Date?
     @Namespace private var rangeAnimation
 
     // MARK: - Data
@@ -63,6 +64,26 @@ struct ExerciseProgressView: View {
     }
 
     private var latest: WeightPoint? { allPoints.last }
+
+    private var selectedPoint: WeightPoint? {
+        guard let selectedDate else { return nil }
+        return points.min {
+            abs($0.date.timeIntervalSince(selectedDate)) < abs($1.date.timeIntervalSince(selectedDate))
+        }
+    }
+
+    private var xDomain: ClosedRange<Date> {
+        let now = Date()
+        let cutoff = Calendar.current.date(byAdding: .month, value: -selectedRange.months, to: now) ?? now
+        return cutoff...now
+    }
+
+    private var yDomain: ClosedRange<Double> {
+        let weights = points.map(\.weight)
+        guard let minWeight = weights.min(), let maxWeight = weights.max() else { return 0...100 }
+        let padding = max((maxWeight - minWeight) * 0.2, 5)
+        return max(0, minWeight - padding)...(maxWeight + padding)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -120,18 +141,18 @@ struct ExerciseProgressView: View {
 
     @ViewBuilder
     private var latestResultBlock: some View {
-        if let latest {
+        if let point = selectedPoint ?? latest {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text("\(Int(latest.weight)) кг")
+                    Text("\(Int(point.weight)) кг")
                         .h1Bold()
                         .foregroundStyle(Color.appBlack)
-                    Text("x \(latest.reps)")
+                    Text("x \(point.reps)")
                         .h1Bold()
                         .foregroundStyle(Color.appGray.opacity(0.5))
                 }
 
-                Text(latest.date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "ru_RU"))))
+                Text(point.date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "ru_RU"))))
                     .body15Regular()
                     .foregroundStyle(Color.appGray)
             }
@@ -196,7 +217,8 @@ struct ExerciseProgressView: View {
 
     private var chart: some View {
         Chart {
-            ForEach(points) { point in
+            // Всегда все точки: при смене периода анимируется только домен осей
+            ForEach(allPoints) { point in
                 AreaMark(
                     x: .value("Дата", point.date),
                     y: .value("Вес", point.weight)
@@ -211,7 +233,7 @@ struct ExerciseProgressView: View {
                 .interpolationMethod(.linear)
             }
 
-            ForEach(points) { point in
+            ForEach(allPoints) { point in
                 LineMark(
                     x: .value("Дата", point.date),
                     y: .value("Вес", point.weight)
@@ -221,7 +243,7 @@ struct ExerciseProgressView: View {
                 .interpolationMethod(.linear)
             }
 
-            if let last = points.last {
+            if selectedPoint == nil, let last = points.last {
                 RuleMark(x: .value("Последняя", last.date))
                     .foregroundStyle(Color.appGray.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
@@ -233,6 +255,34 @@ struct ExerciseProgressView: View {
                 .foregroundStyle(Color.green)
                 .symbolSize(80)
             }
+
+            if let selectedPoint {
+                RuleMark(x: .value("Выбрано", selectedPoint.date))
+                    .foregroundStyle(Color.appGray.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+                    .annotation(
+                        position: .top,
+                        spacing: 6,
+                        overflowResolution: .init(x: .fit(to: .chart), y: .disabled)
+                    ) {
+                        selectionCallout(selectedPoint)
+                    }
+
+                PointMark(
+                    x: .value("Дата", selectedPoint.date),
+                    y: .value("Вес", selectedPoint.weight)
+                )
+                .foregroundStyle(Color.green)
+                .symbolSize(80)
+            }
+        }
+        .chartXScale(domain: xDomain)
+        .chartYScale(domain: yDomain)
+        .chartPlotStyle { $0.clipped() }
+        .chartXSelection(value: $selectedDate)
+        .sensoryFeedback(.selection, trigger: selectedPoint?.id)
+        .onChange(of: selectedRange) { _, _ in
+            selectedDate = nil
         }
         .chartXAxis(.hidden)
         .chartYAxis {
@@ -249,6 +299,26 @@ struct ExerciseProgressView: View {
             }
         }
         .frame(height: 220)
+    }
+
+    private func selectionCallout(_ point: WeightPoint) -> some View {
+        VStack(spacing: 2) {
+            Text("\(Int(point.weight)) кг x \(point.reps)")
+                .body13Medium()
+                .foregroundStyle(Color.appBlack)
+            Text(point.date.formatted(.dateTime.day().month().locale(Locale(identifier: "ru_RU"))))
+                .body13Regular()
+                .foregroundStyle(Color.appGray)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.appGray.opacity(0.2), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
     }
 
     // MARK: - Empty State
@@ -268,10 +338,11 @@ struct ExerciseProgressView: View {
 // MARK: - Models
 
 private struct WeightPoint: Identifiable {
-    let id = UUID()
     let date: Date
     let weight: Double
     let reps: Int
+
+    var id: Date { date }
 }
 
 private enum TimeRange: String, CaseIterable, Identifiable {
