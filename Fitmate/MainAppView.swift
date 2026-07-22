@@ -38,8 +38,8 @@ struct MainAppView: View {
                         ExerciseSelectionView(mode: .replace)
                     case .strengthProgress:
                         StrengthProgressView()
-                    case .exerciseProgress(let name, let subtitle):
-                        ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle)
+                    case .exerciseProgress(let name, let subtitle, let exerciseId):
+                        ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle, exerciseId: exerciseId)
                     case .workoutHistory:
                         WorkoutHistoryView()
                     }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import Charts
 
 struct ExerciseProgressView: View {
@@ -13,41 +14,74 @@ struct ExerciseProgressView: View {
 
     let exerciseName: String
     let exerciseSubtitle: String
+    let exerciseId: String
+
+    @Query private var workouts: [WorkoutLocal]
 
     @State private var selectedRange: TimeRange = .month1
     @Namespace private var rangeAnimation
 
-    // MARK: - Mock Data
+    // MARK: - Data
 
-    private let latestWeight: Int = 76
-    private let latestReps: Int = 10
-    private let latestDate: Date = makeDate(2025, 8, 2)
+    /// Кастомные упражнения не имеют `exerciseId` — их матчим по имени снапшота.
+    private func matches(_ exercise: WorkoutExerciseLocal) -> Bool {
+        exerciseId.isEmpty
+            ? exercise.exerciseId.isEmpty && exercise.exerciseName == exerciseName
+            : exercise.exerciseId == exerciseId
+    }
 
-    private let dataPoints: [WeightPoint] = [
-        WeightPoint(date: makeDate(2025, 7, 5), weight: 70),
-        WeightPoint(date: makeDate(2025, 7, 9), weight: 73),
-        WeightPoint(date: makeDate(2025, 7, 13), weight: 72.5),
-        WeightPoint(date: makeDate(2025, 7, 17), weight: 73),
-        WeightPoint(date: makeDate(2025, 7, 21), weight: 74),
-        WeightPoint(date: makeDate(2025, 7, 25), weight: 75),
-        WeightPoint(date: makeDate(2025, 7, 29), weight: 74.5),
-        WeightPoint(date: makeDate(2025, 8, 2), weight: 76),
-    ]
+    private func bestSet(in workout: WorkoutLocal) -> WorkoutSetLocal? {
+        let sets = workout.exercises
+            .filter(matches)
+            .flatMap { $0.sets }
+        return sets.max { lhs, rhs in
+            lhs.weight != rhs.weight ? lhs.weight < rhs.weight : lhs.reps < rhs.reps
+        }
+    }
+
+    /// Лучший подход (макс. вес) каждой завершённой тренировки с этим упражнением.
+    private var allPoints: [WeightPoint] {
+        var result: [WeightPoint] = []
+        for workout in workouts where workout.endedAt != nil {
+            guard let best = bestSet(in: workout) else { continue }
+            result.append(
+                WeightPoint(
+                    date: workout.endedAt ?? workout.startedAt,
+                    weight: best.weight,
+                    reps: best.reps
+                )
+            )
+        }
+        return result.sorted { $0.date < $1.date }
+    }
+
+    private var points: [WeightPoint] {
+        guard let cutoff = Calendar.current.date(byAdding: .month, value: -selectedRange.months, to: Date()) else {
+            return allPoints
+        }
+        return allPoints.filter { $0.date >= cutoff }
+    }
+
+    private var latest: WeightPoint? { allPoints.last }
 
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    latestResultBlock
+            if allPoints.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        latestResultBlock
 
-                    rangePicker
+                        rangePicker
 
-                    chartCard
+                        chartCard
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -84,20 +118,23 @@ struct ExerciseProgressView: View {
 
     // MARK: - Latest Result
 
+    @ViewBuilder
     private var latestResultBlock: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(latestWeight) кг")
-                    .h1Bold()
-                    .foregroundStyle(Color.appBlack)
-                Text("x \(latestReps)")
-                    .h1Bold()
-                    .foregroundStyle(Color.appGray.opacity(0.5))
-            }
+        if let latest {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(Int(latest.weight)) кг")
+                        .h1Bold()
+                        .foregroundStyle(Color.appBlack)
+                    Text("x \(latest.reps)")
+                        .h1Bold()
+                        .foregroundStyle(Color.appGray.opacity(0.5))
+                }
 
-            Text(latestDate.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "ru_RU"))))
-                .body15Regular()
-                .foregroundStyle(Color.appGray)
+                Text(latest.date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "ru_RU"))))
+                    .body15Regular()
+                    .foregroundStyle(Color.appGray)
+            }
         }
     }
 
@@ -136,8 +173,30 @@ struct ExerciseProgressView: View {
     // MARK: - Chart
 
     private var chartCard: some View {
+        Group {
+            if points.isEmpty {
+                Text("Нет данных за выбранный период")
+                    .body15Regular()
+                    .foregroundStyle(Color.appGray)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 220)
+            } else {
+                chart
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.appGray.opacity(0.2), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var chart: some View {
         Chart {
-            ForEach(dataPoints) { point in
+            ForEach(points) { point in
                 AreaMark(
                     x: .value("Дата", point.date),
                     y: .value("Вес", point.weight)
@@ -152,7 +211,7 @@ struct ExerciseProgressView: View {
                 .interpolationMethod(.linear)
             }
 
-            ForEach(dataPoints) { point in
+            ForEach(points) { point in
                 LineMark(
                     x: .value("Дата", point.date),
                     y: .value("Вес", point.weight)
@@ -162,7 +221,7 @@ struct ExerciseProgressView: View {
                 .interpolationMethod(.linear)
             }
 
-            if let last = dataPoints.last {
+            if let last = points.last {
                 RuleMark(x: .value("Последняя", last.date))
                     .foregroundStyle(Color.appGray.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
@@ -190,13 +249,19 @@ struct ExerciseProgressView: View {
             }
         }
         .frame(height: 220)
-        .padding(16)
-        .background(Color.white)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.appGray.opacity(0.2), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack {
+            Spacer()
+            Text("Нет данных")
+                .body15Regular()
+                .foregroundStyle(Color.appGray)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -206,6 +271,7 @@ private struct WeightPoint: Identifiable {
     let id = UUID()
     let date: Date
     let weight: Double
+    let reps: Int
 }
 
 private enum TimeRange: String, CaseIterable, Identifiable {
@@ -214,6 +280,14 @@ private enum TimeRange: String, CaseIterable, Identifiable {
     case month6
 
     var id: String { rawValue }
+
+    var months: Int {
+        switch self {
+        case .month1: 1
+        case .month3: 3
+        case .month6: 6
+        }
+    }
 
     var title: String {
         switch self {
@@ -224,15 +298,10 @@ private enum TimeRange: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Helpers
-
-private func makeDate(_ year: Int, _ month: Int, _ day: Int) -> Date {
-    Calendar.current.date(from: DateComponents(year: year, month: month, day: day)) ?? Date()
-}
-
 #Preview {
     ExerciseProgressView(
         exerciseName: "Жим штангой",
-        exerciseSubtitle: "В наклоне на хуй"
+        exerciseSubtitle: "В наклоне",
+        exerciseId: ""
     )
 }

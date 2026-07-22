@@ -12,7 +12,21 @@ struct CreateCustomExerciseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
+    @Query private var customExercises: [CustomExerciseLocal]
+
     @State private var exerciseName: String = ""
+
+    private var trimmedName: String {
+        exerciseName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var isDuplicate: Bool {
+        guard !trimmedName.isEmpty else { return false }
+        let normalized = trimmedName.lowercased()
+        return customExercises.contains {
+            $0.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalized
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,16 +36,18 @@ struct CreateCustomExerciseView: View {
                 AppTextField(
                     text: $exerciseName,
                     title: "Название",
-                    caption: "Например: Тяга в горизонтальном блоке"
+                    caption: isDuplicate
+                        ? "Такое упражнение уже есть"
+                        : "Например: Тяга в горизонтальном блоке"
                 )
                 .padding(.top, 16)
 
                 Spacer()
 
-                AppButton(title: "Добавить", isEnabled: !exerciseName.trimmingCharacters(in: .whitespaces).isEmpty) {
+                AppButton(title: "Добавить", isEnabled: !trimmedName.isEmpty && !isDuplicate) {
                     try? AppDependencies
                         .customExerciseRepository(context: modelContext)
-                        .save(name: exerciseName)
+                        .save(name: trimmedName)
                     dismiss()
                 }
                 .padding(.bottom, 16)

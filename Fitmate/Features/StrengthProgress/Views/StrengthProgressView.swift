@@ -22,35 +22,72 @@ struct StrengthProgressView: View {
 
     @State private var selectedGroup: MuscleGroup?
 
-    // ID упражнений, которые юзер реально делал в завершённых тренировках
+    private var completedWorkouts: [WorkoutLocal] {
+        workouts.filter { $0.endedAt != nil }
+    }
+
+    // ID каталожных упражнений, которые юзер реально делал в завершённых тренировках
     private var doneExerciseIds: Set<String> {
         Set(
-            workouts
-                .filter { $0.endedAt != nil }
+            completedWorkouts
                 .flatMap { $0.exercises }
                 .map { $0.exerciseId }
                 .filter { !$0.isEmpty }
         )
     }
 
-    // Группы, в которых есть хоть одно сделанное упражнение
+    // Сделанные кастомные упражнения (без exerciseId) — по уникальному имени
+    private var doneCustomExercises: [ProgressRow] {
+        var seen = Set<String>()
+        var result: [ProgressRow] = []
+        for exercise in completedWorkouts.flatMap({ $0.exercises }) where exercise.exerciseId.isEmpty {
+            guard !exercise.exerciseName.isEmpty, seen.insert(exercise.exerciseName).inserted else { continue }
+            result.append(
+                ProgressRow(
+                    id: "custom:\(exercise.exerciseName)",
+                    name: exercise.exerciseName,
+                    subtitle: exercise.exerciseSubtitle,
+                    imageURL: exercise.exerciseImageLink.flatMap { URL(string: $0) },
+                    exerciseId: ""
+                )
+            )
+        }
+        return result
+    }
+
+    // Группы, в которых есть хоть одно сделанное упражнение (+ «Мои» для кастомных)
     private var availableGroups: [MuscleGroup] {
         let doneGroupIds = Set(
             allExercises
                 .filter { doneExerciseIds.contains($0.id) }
                 .compactMap { $0.muscleGroup?.id }
         )
-        return allMuscleGroups
+        var groups = allMuscleGroups
             .filter { doneGroupIds.contains($0.id) }
             .map { MuscleGroup(id: $0.id, name: $0.name, nameRu: $0.nameRu) }
+        if !doneCustomExercises.isEmpty {
+            groups.insert(.custom, at: 0)
+        }
+        return groups
     }
 
-    // Упражнения выбранной группы, которые юзер делал
-    private var groupExercises: [ExerciseLocal] {
+    // Строки выбранной группы, которые юзер делал
+    private var groupExercises: [ProgressRow] {
         guard let group = selectedGroup ?? availableGroups.first else { return [] }
-        return allExercises.filter { ex in
-            ex.muscleGroup?.id == group.id && doneExerciseIds.contains(ex.id)
+        if group.id == MuscleGroup.custom.id {
+            return doneCustomExercises
         }
+        return allExercises
+            .filter { $0.muscleGroup?.id == group.id && doneExerciseIds.contains($0.id) }
+            .map { exercise in
+                ProgressRow(
+                    id: exercise.id,
+                    name: exercise.nameRu,
+                    subtitle: exercise.subtitleRu,
+                    imageURL: exercise.imageLink.flatMap { URL(string: $0) },
+                    exerciseId: exercise.id
+                )
+            }
     }
 
     var body: some View {
@@ -85,15 +122,15 @@ struct StrengthProgressView: View {
     private var content: some View {
         ScrollView {
             VStack(spacing: 0) {
-                ForEach(groupExercises) { exercise in
+                ForEach(groupExercises) { row in
                     AppCell(
                         icon: Image(systemName: "dumbbell"),
-                        iconURL: exercise.imageLink.flatMap { URL(string: $0) },
-                        title: exercise.nameRu,
-                        subtitle: exercise.subtitleRu,
+                        iconURL: row.imageURL,
+                        title: row.name,
+                        subtitle: row.subtitle,
                         trailingIcon: Image("chevronRight")
                     ) {
-                        router.navigate(to: .exerciseProgress(name: exercise.nameRu, subtitle: exercise.subtitleRu))
+                        router.navigate(to: .exerciseProgress(name: row.name, subtitle: row.subtitle, exerciseId: row.exerciseId))
                     }
                 }
             }
@@ -150,6 +187,17 @@ struct StrengthProgressView: View {
             Divider()
         }
     }
+}
+
+// MARK: - Models
+
+private struct ProgressRow: Identifiable {
+    let id: String
+    let name: String
+    let subtitle: String
+    let imageURL: URL?
+    /// Пусто для кастомных — прогресс матчится по имени.
+    let exerciseId: String
 }
 
 #Preview {
