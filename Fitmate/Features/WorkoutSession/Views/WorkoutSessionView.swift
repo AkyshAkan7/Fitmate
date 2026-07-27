@@ -169,6 +169,39 @@ struct WorkoutSessionView: View {
         }
     }
 
+    /// Лучший подход из последней завершённой тренировки с этим упражнением.
+    private func fillLastResults() {
+        let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
+        guard let allWorkouts = try? repository.all() else { return }
+        let completed = allWorkouts.filter { $0.endedAt != nil && $0.id != activeWorkoutId }
+
+        for index in exerciseSessions.indices {
+            let exercise = exerciseSessions[index].exercise
+            for workout in completed {
+                let sets = workout.exercises
+                    .filter { ex in
+                        if let catalogId = exercise.catalogId {
+                            return ex.exerciseId == catalogId
+                        }
+                        return ex.exerciseId.isEmpty && ex.exerciseName == exercise.name
+                    }
+                    .flatMap { $0.sets }
+                guard let best = sets.max(by: {
+                    $0.weight != $1.weight ? $0.weight < $1.weight : $0.reps < $1.reps
+                }) else { continue }
+                exerciseSessions[index].lastResult = "\(formatWeight(best.weight)) кг x \(best.reps)"
+                exerciseSessions[index].lastBestSet = WorkoutSet(weight: best.weight, reps: best.reps)
+                break
+            }
+        }
+    }
+
+    private func formatWeight(_ weight: Double) -> String {
+        weight.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(weight))
+            : String(format: "%.1f", weight)
+    }
+
     /// Создаёт активную WorkoutLocal сразу при заходе в новую сессию.
     private func createActiveWorkoutIfNeeded() {
         guard activeWorkoutId == nil else { return }
@@ -235,6 +268,14 @@ struct WorkoutSessionView: View {
         let repository = AppDependencies.workoutHistoryRepository(context: modelContext)
         guard let workout = try? repository.find(id: id) else { return }
 
+        // Ни одного подхода — сохранять нечего, удаляем целиком
+        guard workout.exercises.contains(where: { !$0.sets.isEmpty }) else {
+            modelContext.delete(workout)
+            try? modelContext.save()
+            activeWorkoutId = nil
+            return
+        }
+
         // Чистим упражнения без подходов — не попадут в историю
         for ex in workout.exercises where ex.sets.isEmpty {
             modelContext.delete(ex)
@@ -261,22 +302,25 @@ struct WorkoutSessionView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        exerciseSelector
-                        exerciseInfo
-                            .padding(.top, 16)
-                            .overlay(alignment: .top) {
-                                if activeTip == .switching { switchTip }
-                            }
-                            .overlay(alignment: .trailing) {
-                                if activeTip == .replace { replaceTip }
-                            }
-                            .zIndex(1)
-                        lastResultSection
-                        setsSection
+                GeometryReader { geometry in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            exerciseSelector
+                            exerciseInfo
+                                .padding(.top, 16)
+                                .overlay(alignment: .top) {
+                                    if activeTip == .switching { switchTip }
+                                }
+                                .overlay(alignment: .trailing) {
+                                    if activeTip == .replace { replaceTip }
+                                }
+                                .zIndex(1)
+                            lastResultSection
+                            setsSection
+                        }
+                        .padding(.top, 16)
+                        .frame(minHeight: geometry.size.height)
                     }
-                    .padding(.top, 16)
                 }
 
                 bottomButton
@@ -294,6 +338,7 @@ struct WorkoutSessionView: View {
                 createActiveWorkoutIfNeeded()
                 scheduleStackCleanup()
             }
+            fillLastResults()
             if !exerciseSessions.isEmpty { showTipsIfNeeded() }
         }
         .alert("Завершение", isPresented: $showFinishAlert) {
@@ -324,7 +369,12 @@ struct WorkoutSessionView: View {
                 .presentationDetents([.height(420)])
                 .presentationDragIndicator(.visible)
             } else {
-                AddSetView(setNumber: currentSession.sets.count + 1) { weight, reps in
+                let prefill = currentSession.sets.last ?? currentSession.lastBestSet
+                AddSetView(
+                    setNumber: currentSession.sets.count + 1,
+                    initialWeight: prefill?.weight ?? 25,
+                    initialReps: prefill?.reps ?? 10
+                ) { weight, reps in
                     addSet(weight: weight, reps: reps)
                 }
                 .presentationDetents([.height(420)])
@@ -478,7 +528,7 @@ struct WorkoutSessionView: View {
         VStack(spacing: 0) {
             AppCell(
                 title: currentSession.lastResult ?? "0 кг x 0",
-                subtitle: "Последний результат"
+                subtitle: "Последний максимальный результат"
             ) {
                 // TODO: Show history
             }
@@ -505,6 +555,7 @@ struct WorkoutSessionView: View {
                 setsList
             }
         }
+        .frame(maxHeight: currentSession.sets.isEmpty ? .infinity : nil, alignment: .top)
     }
 
     private var emptySetState: some View {
@@ -512,8 +563,8 @@ struct WorkoutSessionView: View {
             .body15Regular()
             .multilineTextAlignment(.center)
             .foregroundStyle(Color.appGray)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 80)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.bottom, 56)
     }
 
     private var setsList: some View {
@@ -558,5 +609,7 @@ struct WorkoutSessionView: View {
         Exercise(name: "Кроссовер", subtitle: "Верхний блок", muscleGroup: .previewChest),
         Exercise(name: "Брусья", subtitle: "На наклонной скамье", muscleGroup: .previewChest),
     ])
+    .environmentObject(Router())
+    .modelContainer(for: WorkoutLocal.self, inMemory: true)
 }
 #endif

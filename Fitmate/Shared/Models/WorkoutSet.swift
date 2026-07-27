@@ -27,6 +27,7 @@ struct ExerciseSession: Identifiable {
     var exercise: Exercise
     var sets: [WorkoutSet]
     var lastResult: String?
+    var lastBestSet: WorkoutSet?
 
     init(exercise: Exercise, sets: [WorkoutSet] = [], lastResult: String? = nil) {
         self.exercise = exercise
