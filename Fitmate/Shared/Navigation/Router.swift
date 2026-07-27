@@ -34,6 +34,7 @@ final class Router: ObservableObject {
     @Published var path = NavigationPath()
 
     var onExerciseReplace: ((Exercise) -> Void)?
+    var onSelectionOrderChange: (([Exercise]) -> Void)?
 
     func navigate(to route: Route) {
         path.append(route)

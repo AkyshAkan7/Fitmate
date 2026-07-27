@@ -81,6 +81,7 @@ struct ConfirmWorkoutTemplateView: View {
             }
             .onMove { from, to in
                 exercises.move(fromOffsets: from, toOffset: to)
+                router.onSelectionOrderChange?(exercises)
             }
         }
         .listStyle(.plain)

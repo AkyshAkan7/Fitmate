@@ -34,7 +34,7 @@ struct ExerciseSelectionView: View {
 
     @State private var viewModel = ExerciseSelectionViewModel()
     @State private var selectedMuscleGroup: MuscleGroup = .custom
-    @State private var selectedExercises: Set<String> = []
+    @State private var selectedExercises: [String] = []
     @State private var selectedExercise: Exercise?
     @State private var didApplyPreselection = false
 
@@ -226,17 +226,26 @@ struct ExerciseSelectionView: View {
     }
 
     private func toggleExerciseSelection(_ exercise: Exercise, isSelected: Bool) {
+        let key = selectionKey(exercise)
         if isSelected {
-            selectedExercises.insert(selectionKey(exercise))
+            if !selectedExercises.contains(key) {
+                selectedExercises.append(key)
+            }
         } else {
-            selectedExercises.remove(selectionKey(exercise))
+            selectedExercises.removeAll { $0 == key }
         }
     }
 
     private func applyPreselectionIfNeeded() {
         guard !didApplyPreselection, !preselected.isEmpty else { return }
         didApplyPreselection = true
-        selectedExercises = Set(preselected.map(selectionKey))
+        selectedExercises = preselected.map(selectionKey)
+    }
+
+    private func orderedSelection() -> [Exercise] {
+        selectedExercises.compactMap { key in
+            allAvailableExercises.first { selectionKey($0) == key }
+        }
     }
 
     // MARK: - Create Custom Link
@@ -274,11 +283,15 @@ struct ExerciseSelectionView: View {
         return AppButton(title: title, isEnabled: isEnabled) {
             switch mode {
             case .workout:
-                let selected = allAvailableExercises.filter { selectedExercises.contains(selectionKey($0)) }
-                router.navigate(to: .workoutConfirm(exercises: selected))
+                router.onSelectionOrderChange = { ordered in
+                    selectedExercises = ordered.map(selectionKey)
+                }
+                router.navigate(to: .workoutConfirm(exercises: orderedSelection()))
             case .template(let name):
-                let selected = allAvailableExercises.filter { selectedExercises.contains(selectionKey($0)) }
-                router.navigate(to: .confirmTemplate(templateName: name, exercises: selected))
+                router.onSelectionOrderChange = { ordered in
+                    selectedExercises = ordered.map(selectionKey)
+                }
+                router.navigate(to: .confirmTemplate(templateName: name, exercises: orderedSelection()))
             case .replace:
                 if let exercise = selectedExercise {
                     router.onExerciseReplace?(exercise)

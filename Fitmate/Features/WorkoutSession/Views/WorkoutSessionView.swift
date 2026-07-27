@@ -319,7 +319,7 @@ struct WorkoutSessionView: View {
                             setsSection
                         }
                         .padding(.top, 16)
-                        .frame(minHeight: geometry.size.height)
+                        .frame(minHeight: geometry.size.height, alignment: .top)
                     }
                 }
 
@@ -484,8 +484,6 @@ struct WorkoutSessionView: View {
 
     private var exerciseInfo: some View {
         AppCell(
-            icon: Image(systemName: "dumbbell"),
-            iconURL: currentSession.exercise.imageURL,
             title: currentSession.exercise.name,
             subtitle: currentSession.exercise.subtitle,
             trailingIcon: Image("reload")
@@ -530,7 +528,11 @@ struct WorkoutSessionView: View {
                 title: currentSession.lastResult ?? "0 кг x 0",
                 subtitle: "Последний максимальный результат"
             ) {
-                // TODO: Show history
+                router.navigate(to: .exerciseProgress(
+                    name: currentSession.exercise.name,
+                    subtitle: currentSession.exercise.subtitle,
+                    exerciseId: currentSession.exercise.catalogId ?? ""
+                ))
             }
 
             Divider()

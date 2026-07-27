@@ -75,7 +75,9 @@ struct ExerciseProgressView: View {
     private var xDomain: ClosedRange<Date> {
         let now = Date()
         let cutoff = Calendar.current.date(byAdding: .month, value: -selectedRange.months, to: now) ?? now
-        return cutoff...now
+        // Запас справа, чтобы последняя точка не резалась краем плот-области
+        let headroom = now.timeIntervalSince(cutoff) * 0.03
+        return cutoff...now.addingTimeInterval(headroom)
     }
 
     private var yDomain: ClosedRange<Double> {
