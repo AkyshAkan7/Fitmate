@@ -158,6 +158,17 @@ struct WorkoutSessionView: View {
             }
     }
 
+    /// После пуш-анимации тихо заменяет стек на resume-роут: «назад» ведёт на главный,
+    /// а пересозданная вью восстановит состояние из БД.
+    private func scheduleStackCleanup() {
+        guard let id = activeWorkoutId else { return }
+        let expectedCount = router.path.count
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            guard router.path.count == expectedCount else { return }
+            router.replaceStackSilently(with: .workoutSessionResume(workoutId: id))
+        }
+    }
+
     /// Создаёт активную WorkoutLocal сразу при заходе в новую сессию.
     private func createActiveWorkoutIfNeeded() {
         guard activeWorkoutId == nil else { return }
@@ -273,15 +284,15 @@ struct WorkoutSessionView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .simultaneousGesture(
-            DragGesture(minimumDistance: 0).onChanged { _ in
-                if activeTip != nil { dismissActiveTip() }
-            }
+            DragGesture(minimumDistance: 0).onChanged { _ in dismissActiveTip() },
+            including: activeTip == nil ? .subviews : .all
         )
-        .task {
+        .onAppear {
             if let id = resumeWorkoutId, activeWorkoutId == nil {
                 loadFromDB(id: id)
             } else if resumeWorkoutId == nil {
                 createActiveWorkoutIfNeeded()
+                scheduleStackCleanup()
             }
             if !exerciseSessions.isEmpty { showTipsIfNeeded() }
         }

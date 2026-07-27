@@ -47,4 +47,18 @@ final class Router: ObservableObject {
     func popToRoot() {
         path = NavigationPath()
     }
+
+    func replaceStack(with route: Route) {
+        var newPath = NavigationPath()
+        newPath.append(route)
+        path = newPath
+    }
+
+    func replaceStackSilently(with route: Route) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            replaceStack(with: route)
+        }
+    }
 }
