@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import Pulse
 import PulseProxy
+import GoogleSignIn
 
 @main
 struct FitmateApp: App {
@@ -24,6 +25,14 @@ struct FitmateApp: App {
         NetworkLogger.enableProxy()
         RemoteLogger.shared.isAutomaticConnectionEnabled = true
         #endif
+
+        // serverClientID must stay the Web OAuth client (same one Android uses)
+        // so the SDK returns a serverAuthCode our backend can exchange via
+        // GET /auth/callback, exactly like the Android flow.
+        if let clientID = Bundle.main.object(forInfoDictionaryKey: "GIDClientID") as? String {
+            let serverClientID = Bundle.main.object(forInfoDictionaryKey: "GIDServerClientID") as? String
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID, serverClientID: serverClientID)
+        }
     }
 
     var body: some Scene {
@@ -34,6 +43,9 @@ struct FitmateApp: App {
                 .environmentObject(router)
                 .modelContainer(modelContainer)
                 .preferredColorScheme(.light)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
             #if DEBUG
                 .pulseConsoleOnShake()
             #endif

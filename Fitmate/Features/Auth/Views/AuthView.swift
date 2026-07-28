@@ -21,14 +21,15 @@ struct AuthView: View {
                 // Sign in buttons
                 VStack(spacing: 12) {
                     SocialSignInButton(type: .apple) {
-                        authManager.signIn()
+                        Task { await authManager.signInWithApple() }
                     }
 
                     SocialSignInButton(type: .google) {
-                        authManager.signIn()
+                        Task { await authManager.signInWithGoogle() }
                     }
                 }
                 .padding(.horizontal, 16)
+                .disabled(authManager.isLoading)
 
                 // Terms and privacy
                 TermsView()
@@ -36,6 +37,17 @@ struct AuthView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
             }
+        }
+        .alert(
+            "Ошибка входа",
+            isPresented: Binding(
+                get: { authManager.errorMessage != nil },
+                set: { isPresented in if !isPresented { authManager.errorMessage = nil } }
+            )
+        ) {
+            Button("ОК", role: .cancel) {}
+        } message: {
+            Text(authManager.errorMessage ?? "")
         }
     }
 }

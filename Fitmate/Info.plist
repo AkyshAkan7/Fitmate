@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Google Sign-In. This file is merged into Xcode's auto-generated Info.plist
+	(GENERATE_INFOPLIST_FILE = YES) to add keys that can't be expressed as a
+	flat INFOPLIST_KEY_* build setting.
+
+	GIDClientID must be the iOS-type OAuth client ID registered in Google
+	Cloud Console for bundle ID com.mobile.Fitmate (separate from the Web
+	client ID used below as GIDServerClientID, which lets the SDK return a
+	serverAuthCode for GET /auth/callback, same as Android). CFBundleURLSchemes
+	must be that same iOS client ID, reversed.
+	TODO: replace REPLACE_WITH_IOS_CLIENT_ID once that OAuth client exists.
+	-->
+	<key>GIDClientID</key>
+	<string>REPLACE_WITH_IOS_CLIENT_ID.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>631131874730-jh63klob3rntq6jlb8lbckvscqfa8ir5.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.REPLACE_WITH_IOS_CLIENT_ID</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

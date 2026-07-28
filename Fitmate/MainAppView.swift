@@ -8,48 +8,53 @@
 import SwiftUI
 
 struct MainAppView: View {
+    @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var languageManager: LanguageManager
     @EnvironmentObject private var router: Router
-    
+
     var body: some View {
-        NavigationStack(path: $router.path) {
-            HomeView()
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .profile:
-                        ProfileView()
-                    case .exerciseSelection(let mode, let preselected):
-                        ExerciseSelectionView(mode: mode, preselected: preselected)
-                    case .workoutConfirm(let exercises):
-                        WorkoutConfirmView(exercises: exercises)
-                    case .workoutSession(let exercises):
-                        WorkoutSessionView(exercises: exercises)
-                    case .workoutSessionResume(let workoutId):
-                        WorkoutSessionView(workoutId: workoutId)
-                    case .workoutComplete:
-                        WorkoutCompleteView()
-                    case .createTemplate:
-                        CreateWorkoutTemplateView()
-                    case .confirmTemplate(let templateName, let exercises):
-                        ConfirmWorkoutTemplateView(templateName: templateName, exercises: exercises)
-                    case .createCustomExercise:
-                        CreateCustomExerciseView()
-                    case .replaceExercise:
-                        ExerciseSelectionView(mode: .replace)
-                    case .strengthProgress:
-                        StrengthProgressView()
-                    case .exerciseProgress(let name, let subtitle, let exerciseId):
-                        ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle, exerciseId: exerciseId)
-                    case .workoutHistory:
-                        WorkoutHistoryView()
-                    case .privacyPolicy:
-                        PrivacyPolicyView()
-                    case .termsOfUse:
-                        TermsOfUseView()
+        if authManager.isAuthenticated {
+            NavigationStack(path: $router.path) {
+                HomeView()
+                    .navigationDestination(for: Route.self) { route in
+                        switch route {
+                        case .profile:
+                            ProfileView()
+                        case .exerciseSelection(let mode, let preselected):
+                            ExerciseSelectionView(mode: mode, preselected: preselected)
+                        case .workoutConfirm(let exercises):
+                            WorkoutConfirmView(exercises: exercises)
+                        case .workoutSession(let exercises):
+                            WorkoutSessionView(exercises: exercises)
+                        case .workoutSessionResume(let workoutId):
+                            WorkoutSessionView(workoutId: workoutId)
+                        case .workoutComplete:
+                            WorkoutCompleteView()
+                        case .createTemplate:
+                            CreateWorkoutTemplateView()
+                        case .confirmTemplate(let templateName, let exercises):
+                            ConfirmWorkoutTemplateView(templateName: templateName, exercises: exercises)
+                        case .createCustomExercise:
+                            CreateCustomExerciseView()
+                        case .replaceExercise:
+                            ExerciseSelectionView(mode: .replace)
+                        case .strengthProgress:
+                            StrengthProgressView()
+                        case .exerciseProgress(let name, let subtitle, let exerciseId):
+                            ExerciseProgressView(exerciseName: name, exerciseSubtitle: subtitle, exerciseId: exerciseId)
+                        case .workoutHistory:
+                            WorkoutHistoryView()
+                        case .privacyPolicy:
+                            PrivacyPolicyView()
+                        case .termsOfUse:
+                            TermsOfUseView()
+                        }
                     }
-                }
+            }
+            .environment(\.locale, Locale(identifier: languageManager.currentLanguage.id))
+        } else {
+            AuthView()
         }
-        .environment(\.locale, Locale(identifier: languageManager.currentLanguage.id))
     }
 }
 

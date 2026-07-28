@@ -10,7 +10,6 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
     @EnvironmentObject private var languageManager: LanguageManager
-    @EnvironmentObject private var router: Router
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -23,14 +22,9 @@ struct ProfileView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
-                        if authManager.isAuthenticated {
-                            accountCard
-                            Spacer()
-                            actionButtons
-                        } else {
-                            signUpCard
-                            Spacer()
-                        }
+                        accountCard
+                        Spacer()
+                        actionButtons
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 16)
@@ -63,43 +57,6 @@ struct ProfileView: View {
 
             Divider()
         }
-    }
-
-    // MARK: - Sign Up Card
-
-    private var signUpCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Image("zap")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 28, height: 28)
-
-            Text("Не потеряйте свой прогресс")
-                .body17Semibold()
-                .foregroundStyle(Color.appBlack)
-                .padding(.top, 24)
-
-            Text("Зарегистрируйтесь, чтобы сохранить прогресс тренировок и не потерять свои результаты.")
-                .body13Regular()
-                .foregroundStyle(Color.appGray)
-                .padding(.top, 8)
-
-            SocialSignInButton(type: .apple) {
-                authManager.signIn()
-            }
-            .padding(.top, 16)
-
-            TermsView(
-                alignment: .leading,
-                onPrivacyTap: { router.navigate(to: .privacyPolicy) },
-                onTermsTap: { router.navigate(to: .termsOfUse) }
-            )
-            .padding(.top, 12)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(Color.lightGray)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 
     // MARK: - Account Card

@@ -8,7 +8,8 @@
 import Foundation
 
 protocol AuthService: Sendable {
-    func signIn(email: String, password: String) async throws
+    func signInWithGoogle(serverAuthCode: String) async throws
+    func signInWithApple(identityToken: String) async throws
     func signOut()
     var isAuthenticated: Bool { get }
 }
@@ -26,11 +27,18 @@ final class DefaultAuthService: AuthService {
         tokenStorage.read() != nil
     }
 
-    func signIn(email: String, password: String) async throws {
-        let response: SignInResponse = try await client.send(
-            AuthEndpoint.signIn(email: email, password: password)
+    func signInWithGoogle(serverAuthCode: String) async throws {
+        let response: AuthTokenResponse = try await client.send(
+            AuthEndpoint.googleCallback(code: serverAuthCode)
         )
-        tokenStorage.save(response.accessToken)
+        tokenStorage.save(response.token)
+    }
+
+    func signInWithApple(identityToken: String) async throws {
+        let response: AuthTokenResponse = try await client.send(
+            AuthEndpoint.apple(identityToken: identityToken)
+        )
+        tokenStorage.save(response.token)
     }
 
     func signOut() {
@@ -41,17 +49,29 @@ final class DefaultAuthService: AuthService {
 // MARK: - Endpoints
 
 private enum AuthEndpoint: Endpoint {
-    case signIn(email: String, password: String)
+    case googleCallback(code: String)
+    case apple(identityToken: String)
 
     var path: String {
         switch self {
-        case .signIn: "/auth/sign-in"
+        case .googleCallback: "/auth/callback"
+        case .apple: "/auth/apple"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .signIn: .post
+        case .googleCallback: .get
+        case .apple: .post
+        }
+    }
+
+    var query: [URLQueryItem]? {
+        switch self {
+        case .googleCallback(let code):
+            [URLQueryItem(name: "code", value: code)]
+        case .apple:
+            nil
         }
     }
 
@@ -59,19 +79,20 @@ private enum AuthEndpoint: Endpoint {
 
     var body: (any Encodable)? {
         switch self {
-        case .signIn(let email, let password):
-            SignInRequest(email: email, password: password)
+        case .googleCallback:
+            nil
+        case .apple(let identityToken):
+            AppleSignInRequest(identityToken: identityToken)
         }
     }
 }
 
 // MARK: - DTO
 
-private struct SignInRequest: Encodable {
-    let email: String
-    let password: String
+private struct AppleSignInRequest: Encodable {
+    let identityToken: String
 }
 
-private struct SignInResponse: Decodable {
-    let accessToken: String
+private struct AuthTokenResponse: Decodable {
+    let token: String
 }
