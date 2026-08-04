@@ -170,11 +170,12 @@ struct HomeView: View {
                         startWorkout(.quickStart)
                     }
                     .padding(.top, 24)
-
-                    if activeWorkout != nil {
-                        activeWorkoutBanner
-                            .padding(.top, 16)
-                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if activeWorkout != nil {
+                    activeWorkoutBanner
+                        .padding(.top, 8 )
                 }
             }
             .padding(.horizontal, 16)
@@ -214,6 +215,7 @@ struct HomeView: View {
             .padding(16)
             .background(Color.yellow)
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
         }
     }
 

@@ -12,6 +12,7 @@ struct AppCell: View {
     var iconURL: URL? = nil
     let title: String
     var subtitle: String? = nil
+    var reservesSubtitleSpace: Bool = false
     var value: String? = nil
     var subvalue: String? = nil
     var isReverse: Bool = false
@@ -101,6 +102,9 @@ struct AppCell: View {
             Text(subtitle)
                 .body13Regular()
                 .foregroundStyle(Color.appGray)
+        } else if reservesSubtitleSpace {
+            Text(" ")
+                .body13Regular()
         }
     }
 

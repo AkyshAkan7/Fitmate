@@ -342,7 +342,7 @@ struct WorkoutSessionView: View {
             if !exerciseSessions.isEmpty { showTipsIfNeeded() }
         }
         .alert("Завершение", isPresented: $showFinishAlert) {
-            Button("Сохранить", role: .cancel) {
+            Button("Сохранить") {
                 finishAndSave()
                 router.navigate(to: .workoutComplete)
             }
@@ -351,6 +351,7 @@ struct WorkoutSessionView: View {
                 finishAndDelete()
                 router.popToRoot()
             }
+            Button("Отменить", role: .cancel) {}
         } message: {
             Text("Все невыполненные упражнения не сохранятся. Сохранить тренировку?")
         }
@@ -486,6 +487,7 @@ struct WorkoutSessionView: View {
         AppCell(
             title: currentSession.exercise.name,
             subtitle: currentSession.exercise.subtitle,
+            reservesSubtitleSpace: true,
             trailingIcon: Image("reload")
         ) {
             router.onExerciseReplace = { [self] newExercise in
