@@ -25,7 +25,7 @@ enum DayStatus {
 
 struct WeekDayView: View {
     private let calendar = Calendar.current
-    private let weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+    private let weekDays: [LocalizedStringKey] = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 
     // Status for each day (Monday to Sunday)
     var dayStatuses: [DayStatus] = []

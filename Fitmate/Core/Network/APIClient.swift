@@ -55,11 +55,19 @@ final class DefaultAPIClient: APIClient {
     private func performRequest(_ endpoint: Endpoint) async throws -> Data {
         let request = try buildRequest(for: endpoint)
 
+        #if DEBUG
+        ConsoleNetworkLogger.log(request: request)
+        #endif
+
         do {
             let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 throw APIError.unknown(URLError(.badServerResponse))
             }
+
+            #if DEBUG
+            ConsoleNetworkLogger.log(response: http, data: data, error: nil)
+            #endif
 
             switch http.statusCode {
             case 200..<300:
@@ -74,8 +82,14 @@ final class DefaultAPIClient: APIClient {
         } catch let error as APIError {
             throw error
         } catch let error as URLError {
+            #if DEBUG
+            ConsoleNetworkLogger.log(response: nil, data: nil, error: error)
+            #endif
             throw APIError.network(error)
         } catch {
+            #if DEBUG
+            ConsoleNetworkLogger.log(response: nil, data: nil, error: error)
+            #endif
             throw APIError.unknown(error)
         }
     }
@@ -94,6 +108,7 @@ final class DefaultAPIClient: APIClient {
         request.httpMethod = endpoint.method.rawValue
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue(AppLocale.languageCode, forHTTPHeaderField: "Accept-Language")
 
         endpoint.headers?.forEach { key, value in
             request.setValue(value, forHTTPHeaderField: key)

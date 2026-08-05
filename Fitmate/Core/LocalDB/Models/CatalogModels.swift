@@ -42,6 +42,9 @@ final class ExerciseLocal {
     var imageLink: String?
     var muscleGroup: MuscleGroupLocal?
 
+    var localizedName: String { AppLocale.isRussian ? nameRu : name }
+    var localizedSubtitle: String { AppLocale.isRussian ? subtitleRu : subtitle }
+
     init(
         id: String,
         name: String,

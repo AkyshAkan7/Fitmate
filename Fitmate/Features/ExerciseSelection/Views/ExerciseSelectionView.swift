@@ -278,7 +278,7 @@ struct ExerciseSelectionView: View {
 
     private var bottomButton: some View {
         let isEnabled = isReplaceMode ? selectedExercise != nil : !selectedExercises.isEmpty
-        let title = isReplaceMode ? "Заменить" : "Готово"
+        let title: LocalizedStringKey = isReplaceMode ? "Заменить" : "Готово"
 
         return AppButton(title: title, isEnabled: isEnabled) {
             switch mode {

@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct StatsCardView: View {
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     var action: (() -> Void)? = nil
 
     var body: some View {

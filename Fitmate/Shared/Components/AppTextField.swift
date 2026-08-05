@@ -8,18 +8,18 @@
 import SwiftUI
 
 struct AppTextField: View {
-    let title: String?
-    let placeholder: String
-    let caption: String?
+    let title: LocalizedStringKey?
+    let placeholder: LocalizedStringKey
+    let caption: LocalizedStringKey?
     let autoFocus: Bool
     @Binding var text: String
     @FocusState private var isFocused: Bool
 
     init(
-        _ placeholder: String = "",
+        _ placeholder: LocalizedStringKey = "",
         text: Binding<String>,
-        title: String? = nil,
-        caption: String? = nil,
+        title: LocalizedStringKey? = nil,
+        caption: LocalizedStringKey? = nil,
         autoFocus: Bool = false
     ) {
         self.placeholder = placeholder

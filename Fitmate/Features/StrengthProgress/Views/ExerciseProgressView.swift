@@ -154,7 +154,7 @@ struct ExerciseProgressView: View {
                         .foregroundStyle(Color.appGray.opacity(0.5))
                 }
 
-                Text(point.date.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "ru_RU"))))
+                Text(point.date.formatted(.dateTime.day().month(.wide).year()))
                     .body15Regular()
                     .foregroundStyle(Color.appGray)
             }
@@ -308,7 +308,7 @@ struct ExerciseProgressView: View {
             Text("\(Int(point.weight)) кг x \(point.reps)")
                 .body13Medium()
                 .foregroundStyle(Color.appBlack)
-            Text(point.date.formatted(.dateTime.day().month().locale(Locale(identifier: "ru_RU"))))
+            Text(point.date.formatted(.dateTime.day().month()))
                 .body13Regular()
                 .foregroundStyle(Color.appGray)
         }
@@ -364,9 +364,9 @@ private enum TimeRange: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .month1: "1 мес"
-        case .month3: "3 мес"
-        case .month6: "6 мес"
+        case .month1: String(localized: "1 мес")
+        case .month3: String(localized: "3 мес")
+        case .month6: String(localized: "6 мес")
         }
     }
 }

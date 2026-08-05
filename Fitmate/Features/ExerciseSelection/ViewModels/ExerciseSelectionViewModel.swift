@@ -64,8 +64,8 @@ final class ExerciseSelectionViewModel {
             byGroup[group] = local.exercises.map { ex in
                 Exercise(
                     catalogId: ex.id,
-                    name: ex.nameRu,
-                    subtitle: ex.subtitleRu,
+                    name: ex.localizedName,
+                    subtitle: ex.localizedSubtitle,
                     muscleGroup: group,
                     imageURL: ex.imageLink.flatMap { URL(string: $0) }
                 )

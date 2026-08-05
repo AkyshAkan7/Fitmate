@@ -82,8 +82,8 @@ struct StrengthProgressView: View {
             .map { exercise in
                 ProgressRow(
                     id: exercise.id,
-                    name: exercise.nameRu,
-                    subtitle: exercise.subtitleRu,
+                    name: exercise.localizedName,
+                    subtitle: exercise.localizedSubtitle,
                     imageURL: exercise.imageLink.flatMap { URL(string: $0) },
                     exerciseId: exercise.id
                 )

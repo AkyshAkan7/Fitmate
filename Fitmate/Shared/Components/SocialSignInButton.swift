@@ -4,7 +4,7 @@ enum SocialSignInType {
     case apple
     case google
 
-    var title: String {
+    var title: LocalizedStringKey {
         switch self {
         case .apple: return "Войти через Apple"
         case .google: return "Войти через Google"

@@ -41,7 +41,7 @@ struct WorkoutSessionView: View {
             ExerciseSession(
                 exercise: exercise,
                 sets: [],
-                lastResult: "0 кг x 0"
+                lastResult: String(localized: "0 кг x 0")
             )
         }
         _exerciseSessions = State(initialValue: sessions)
@@ -153,7 +153,7 @@ struct WorkoutSessionView: View {
                 return ExerciseSession(
                     exercise: exercise,
                     sets: sets,
-                    lastResult: "0 кг x 0"
+                    lastResult: String(localized: "0 кг x 0")
                 )
             }
     }
@@ -189,7 +189,7 @@ struct WorkoutSessionView: View {
                 guard let best = sets.max(by: {
                     $0.weight != $1.weight ? $0.weight < $1.weight : $0.reps < $1.reps
                 }) else { continue }
-                exerciseSessions[index].lastResult = "\(formatWeight(best.weight)) кг x \(best.reps)"
+                exerciseSessions[index].lastResult = String(localized: "\(formatWeight(best.weight)) кг x \(best.reps)")
                 exerciseSessions[index].lastBestSet = WorkoutSet(weight: best.weight, reps: best.reps)
                 break
             }
@@ -527,8 +527,8 @@ struct WorkoutSessionView: View {
     private var lastResultSection: some View {
         VStack(spacing: 0) {
             AppCell(
-                title: currentSession.lastResult ?? "0 кг x 0",
-                subtitle: "Последний максимальный результат"
+                title: currentSession.lastResult ?? String(localized: "0 кг x 0"),
+                subtitle: String(localized: "Последний максимальный результат")
             ) {
                 router.navigate(to: .exerciseProgress(
                     name: currentSession.exercise.name,
@@ -581,7 +581,7 @@ struct WorkoutSessionView: View {
 
     private func setRow(_ set: WorkoutSet, index: Int) -> some View {
         AppCell(
-            title: "\(index + 1) подход",
+            title: String(localized: "\(index + 1) подход"),
             value: set.displayText,
             trailingIcon: Image(systemName: "ellipsis")
         ) {

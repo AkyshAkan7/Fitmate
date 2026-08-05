@@ -16,7 +16,7 @@ struct WorkoutSet: Identifiable, Hashable {
     var isCompleted: Bool = false
 
     var displayText: String {
-        "\(weight.formatted) кг x \(reps)"
+        String(localized: "\(weight.formatted) кг x \(reps)")
     }
 }
 

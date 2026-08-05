@@ -18,15 +18,15 @@ enum APIError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            "Неверный URL запроса"
+            String(localized: "Неверный URL запроса")
         case .unauthorized:
-            "Требуется авторизация"
+            String(localized: "Требуется авторизация")
         case .network(let error):
-            "Ошибка сети: \(error.localizedDescription)"
+            String(localized: "Ошибка сети: \(error.localizedDescription)")
         case .decoding:
-            "Не удалось разобрать ответ сервера"
+            String(localized: "Не удалось разобрать ответ сервера")
         case .server(let code, let message):
-            message ?? "Ошибка сервера (\(code))"
+            message ?? String(localized: "Ошибка сервера (\(code))")
         case .unknown(let error):
             error.localizedDescription
         }

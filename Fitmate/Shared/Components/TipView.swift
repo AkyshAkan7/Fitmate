@@ -13,7 +13,7 @@ enum TipArrow {
 }
 
 struct TipView: View {
-    let text: String
+    let text: LocalizedStringKey
     var arrow: TipArrow = .top
     var onDismiss: (() -> Void)? = nil
 

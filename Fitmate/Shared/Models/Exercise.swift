@@ -17,9 +17,7 @@ struct MuscleGroup: Identifiable, Hashable {
     /// Локальный сентинел для таба «Мои» (не приходит с сервера).
     static let custom = MuscleGroup(id: "__custom__", name: "My", nameRu: "Мои")
 
-    /// Что показывать на чипах. Пока — русское имя.
-    /// При локализации заменим на выбор по `Locale.current`.
-    var displayName: String { nameRu }
+    var displayName: String { AppLocale.isRussian ? nameRu : name }
 
     #if DEBUG
     static let previewChest = MuscleGroup(id: "preview-chest", name: "Chest", nameRu: "Грудь")

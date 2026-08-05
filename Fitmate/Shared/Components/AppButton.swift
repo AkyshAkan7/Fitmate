@@ -15,7 +15,7 @@ enum AppButtonType {
 }
 
 struct AppButton: View {
-    let title: String
+    let title: LocalizedStringKey
     var type: AppButtonType = .primary
     var isEnabled: Bool = true
     var action: () -> Void

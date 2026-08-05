@@ -19,11 +19,11 @@ enum WorkoutHistoryPeriod: Hashable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .twoWeeks: return "За 2 недели"
-        case .month: return "За месяц"
-        case .threeMonths: return "За 3 месяца"
-        case .sixMonths: return "За полгода"
-        case .year: return "За год"
+        case .twoWeeks: return String(localized: "За 2 недели")
+        case .month: return String(localized: "За месяц")
+        case .threeMonths: return String(localized: "За 3 месяца")
+        case .sixMonths: return String(localized: "За полгода")
+        case .year: return String(localized: "За год")
         }
     }
 
@@ -214,8 +214,8 @@ struct WorkoutHistoryView: View {
 
     private static func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.dateFormat = "EEEE, d MMMM"
+        formatter.locale = .autoupdatingCurrent
+        formatter.setLocalizedDateFormatFromTemplate("EEEE d MMMM")
         let raw = formatter.string(from: date)
         return raw.prefix(1).uppercased() + raw.dropFirst()
     }
