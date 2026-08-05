@@ -118,16 +118,8 @@ struct WorkoutHistoryView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
             WorkoutHistoryDetailView(item: item)
-                .presentationDetents([.height(sheetHeight(for: item))])
                 .presentationDragIndicator(.visible)
         }
-    }
-
-    private func sheetHeight(for item: WorkoutHistoryItem) -> CGFloat {
-        let headerHeight: CGFloat = 110
-        let cellHeight: CGFloat = 44
-        let trailing: CGFloat = 32
-        return headerHeight + CGFloat(item.sets.count) * cellHeight + trailing
     }
 
     // MARK: - Navigation Bar

@@ -10,6 +10,8 @@ import SwiftUI
 struct WorkoutHistoryDetailView: View {
     let item: WorkoutHistoryItem
 
+    @State private var contentHeight: CGFloat = 200
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
@@ -35,11 +37,13 @@ struct WorkoutHistoryDetailView: View {
                     .padding(16)
                 }
             }
-
-            Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { contentHeight = $0 }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(.white)
         .presentationBackground(.white)
+        .presentationDetents([.height(contentHeight)])
     }
 
     // MARK: - Header
@@ -50,25 +54,32 @@ struct WorkoutHistoryDetailView: View {
                 .headline24Bold()
                 .foregroundStyle(Color.appBlack)
 
-            Text(item.subtitle)
-                .body15Regular()
-                .foregroundStyle(Color.appGray)
+            if !item.subtitle.isEmpty {
+                Text(item.subtitle)
+                    .body15Regular()
+                    .foregroundStyle(Color.appGray)
+            }
         }
     }
 }
 
 #Preview {
-    WorkoutHistoryDetailView(
-        item: WorkoutHistoryItem(
-            id: UUID(),
-            name: "Жим штангой",
-            subtitle: "В наклоне",
-            dateLabel: "Понедельник, 6 апреля",
-            sets: [
-                WorkoutHistorySet(weight: 30, reps: 10),
-                WorkoutHistorySet(weight: 50, reps: 10),
-                WorkoutHistorySet(weight: 40, reps: 8)
-            ]
-        )
-    )
+    Color.lightGray
+        .ignoresSafeArea()
+        .sheet(isPresented: .constant(true)) {
+            WorkoutHistoryDetailView(
+                item: WorkoutHistoryItem(
+                    id: UUID(),
+                    name: "Жим штангой",
+                    subtitle: "В наклоне",
+                    dateLabel: "Понедельник, 6 апреля",
+                    sets: [
+                        WorkoutHistorySet(weight: 30, reps: 10),
+                        WorkoutHistorySet(weight: 50, reps: 10),
+                        WorkoutHistorySet(weight: 40, reps: 8)
+                    ]
+                )
+            )
+            .presentationDragIndicator(.visible)
+        }
 }

@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-/// Лёгкая обёртка над `AsyncImage` с in-memory кэшем (`NSCache`).
-/// Картинка по конкретному URL грузится из сети только один раз за сессию приложения.
+/// AsyncImage с двухуровневым кэшем: NSCache в памяти + URLCache на диске.
+/// Кэшированная картинка показывается мгновенно, при этом раз за сессию
+/// уходит ревалидация на сервер — обновлённые картинки подтягиваются сами.
 struct CachedAsyncImage<Placeholder: View, Content: View>: View {
     private let url: URL?
     private let content: (Image) -> Content
     private let placeholder: () -> Placeholder
 
     @State private var loadedImage: UIImage?
+    @State private var isLoading = false
 
     init(
         url: URL?,
@@ -32,6 +34,11 @@ struct CachedAsyncImage<Placeholder: View, Content: View>: View {
                 content(Image(uiImage: loadedImage))
             } else {
                 placeholder()
+                    .overlay {
+                        if isLoading {
+                            ProgressView()
+                        }
+                    }
             }
         }
         .task(id: url) { await load() }
@@ -45,14 +52,31 @@ struct CachedAsyncImage<Placeholder: View, Content: View>: View {
 
         if let cached = ImageCache.shared.image(for: url) {
             loadedImage = cached
+            await revalidateIfNeeded(url)
             return
         }
 
+        isLoading = true
+        await fetch(url, policy: .useProtocolCachePolicy)
+        isLoading = false
+    }
+
+    /// Раз за сессию проверяет у сервера, не обновилась ли картинка (ETag/Last-Modified).
+    private func revalidateIfNeeded(_ url: URL) async {
+        guard ImageCache.shared.shouldRevalidate(url) else { return }
+        await fetch(url, policy: .reloadRevalidatingCacheData)
+    }
+
+    private func fetch(_ url: URL, policy: URLRequest.CachePolicy) async {
+        var request = URLRequest(url: url)
+        request.cachePolicy = policy
+
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            guard let image = UIImage(data: data) else { return }
+            let (data, _) = try await ImageCache.session.data(for: request)
+            guard let raw = UIImage(data: data) else { return }
+            // Декодируем заранее в фоне — без лагов при первом показе в списке
+            let image = await raw.byPreparingForDisplay() ?? raw
             ImageCache.shared.store(image, for: url)
-            // Проверяем что URL не сменился пока грузили
             if url == self.url {
                 loadedImage = image
             }
@@ -67,7 +91,18 @@ struct CachedAsyncImage<Placeholder: View, Content: View>: View {
 private final class ImageCache {
     static let shared = ImageCache()
 
+    /// Отдельная сессия с дисковым кэшем — картинки живут между запусками.
+    static let session: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache(
+            memoryCapacity: 16 * 1024 * 1024,
+            diskCapacity: 128 * 1024 * 1024
+        )
+        return URLSession(configuration: configuration)
+    }()
+
     private let cache = NSCache<NSURL, UIImage>()
+    private var revalidated = Set<URL>()
 
     private init() {
         cache.countLimit = 200
@@ -81,5 +116,11 @@ private final class ImageCache {
     func store(_ image: UIImage, for url: URL) {
         let cost = Int(image.size.width * image.size.height * 4)
         cache.setObject(image, forKey: url as NSURL, cost: cost)
+    }
+
+    func shouldRevalidate(_ url: URL) -> Bool {
+        guard !revalidated.contains(url) else { return false }
+        revalidated.insert(url)
+        return true
     }
 }
