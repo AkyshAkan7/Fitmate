@@ -13,6 +13,7 @@ struct ProfileView: View {
     @EnvironmentObject private var router: Router
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @AppStorage(StorageKeys.userDisplayName) private var displayName = "Apple ID"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,6 +40,17 @@ struct ProfileView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .alert(
+            "Ошибка",
+            isPresented: Binding(
+                get: { authManager.authErrorMessage != nil },
+                set: { if !$0 { authManager.authErrorMessage = nil } }
+            )
+        ) {
+            Button("Ок", role: .cancel) {}
+        } message: {
+            Text(authManager.authErrorMessage ?? "")
+        }
     }
 
     // MARK: - Navigation Bar
@@ -85,7 +97,7 @@ struct ProfileView: View {
                 .padding(.top, 8)
 
             SocialSignInButton(type: .apple) {
-                authManager.signIn()
+                Task { await authManager.signInWithApple() }
             }
             .padding(.top, 16)
 
@@ -110,7 +122,7 @@ struct ProfileView: View {
                 Text("Аккаунт")
                     .body13Regular()
                     .foregroundStyle(Color.appGray)
-                Text("testing")
+                Text(displayName)
                     .body15Regular()
                     .foregroundStyle(Color.appBlack)
             }

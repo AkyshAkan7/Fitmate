@@ -8,9 +8,9 @@
 import Foundation
 
 protocol AuthService: Sendable {
-    func signIn(email: String, password: String) async throws
-    func signOut()
     var isAuthenticated: Bool { get }
+    func signInWithApple(identityToken: String) async throws
+    func signOut()
 }
 
 final class DefaultAuthService: AuthService {
@@ -26,11 +26,11 @@ final class DefaultAuthService: AuthService {
         tokenStorage.read() != nil
     }
 
-    func signIn(email: String, password: String) async throws {
-        let response: SignInResponse = try await client.send(
-            AuthEndpoint.signIn(email: email, password: password)
+    func signInWithApple(identityToken: String) async throws {
+        let response: TokenResponse = try await client.send(
+            AuthEndpoint.apple(identityToken: identityToken)
         )
-        tokenStorage.save(response.accessToken)
+        tokenStorage.save(response.token)
     }
 
     func signOut() {
@@ -41,17 +41,17 @@ final class DefaultAuthService: AuthService {
 // MARK: - Endpoints
 
 private enum AuthEndpoint: Endpoint {
-    case signIn(email: String, password: String)
+    case apple(identityToken: String)
 
     var path: String {
         switch self {
-        case .signIn: "/auth/sign-in"
+        case .apple: "/auth/apple"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .signIn: .post
+        case .apple: .post
         }
     }
 
@@ -59,19 +59,18 @@ private enum AuthEndpoint: Endpoint {
 
     var body: (any Encodable)? {
         switch self {
-        case .signIn(let email, let password):
-            SignInRequest(email: email, password: password)
+        case .apple(let identityToken):
+            AppleSignInRequest(identityToken: identityToken)
         }
     }
 }
 
 // MARK: - DTO
 
-private struct SignInRequest: Encodable {
-    let email: String
-    let password: String
+private struct AppleSignInRequest: Encodable {
+    let identityToken: String
 }
 
-private struct SignInResponse: Decodable {
-    let accessToken: String
+private struct TokenResponse: Decodable {
+    let token: String
 }

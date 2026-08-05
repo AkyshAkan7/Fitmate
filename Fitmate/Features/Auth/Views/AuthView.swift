@@ -19,14 +19,8 @@ struct AuthView: View {
                 Spacer()
 
                 // Sign in buttons
-                VStack(spacing: 12) {
-                    SocialSignInButton(type: .apple) {
-                        authManager.signIn()
-                    }
-
-                    SocialSignInButton(type: .google) {
-                        authManager.signIn()
-                    }
+                SocialSignInButton(type: .apple) {
+                    Task { await authManager.signInWithApple() }
                 }
                 .padding(.horizontal, 16)
 
