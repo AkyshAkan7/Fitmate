@@ -286,7 +286,7 @@ struct ExerciseSelectionView: View {
                 router.onSelectionOrderChange = { ordered in
                     selectedExercises = ordered.map(selectionKey)
                 }
-                router.navigate(to: .workoutConfirm(exercises: orderedSelection()))
+                router.navigate(to: .workoutConfirm(exercises: orderedSelection(), fromTemplate: false))
             case .template(let name):
                 router.onSelectionOrderChange = { ordered in
                     selectedExercises = ordered.map(selectionKey)

@@ -20,8 +20,8 @@ struct MainAppView: View {
                         ProfileView()
                     case .exerciseSelection(let mode, let preselected):
                         ExerciseSelectionView(mode: mode, preselected: preselected)
-                    case .workoutConfirm(let exercises):
-                        WorkoutConfirmView(exercises: exercises)
+                    case .workoutConfirm(let exercises, let fromTemplate):
+                        WorkoutConfirmView(exercises: exercises, fromTemplate: fromTemplate)
                     case .workoutSession(let exercises):
                         WorkoutSessionView(exercises: exercises)
                     case .workoutSessionResume(let workoutId):

@@ -26,8 +26,11 @@ struct WorkoutConfirmView: View {
     @State private var exercises: [Exercise]
     @State private var showTip = false
 
-    init(exercises: [Exercise]) {
+    private let fromTemplate: Bool
+
+    init(exercises: [Exercise], fromTemplate: Bool = false) {
         _exercises = State(initialValue: exercises)
+        self.fromTemplate = fromTemplate
     }
 
     // MARK: - Computed Properties
@@ -122,7 +125,11 @@ struct WorkoutConfirmView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
                 Button {
-                    dismiss()
+                    if fromTemplate {
+                        router.popToRoot()
+                    } else {
+                        dismiss()
+                    }
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20, weight: .medium))

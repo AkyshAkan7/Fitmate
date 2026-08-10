@@ -26,16 +26,7 @@ struct AppCell: View {
             HStack(spacing: 12) {
                 iconView
 
-                // Title & Subtitle
-                VStack(alignment: .leading, spacing: 2) {
-                    if isReverse {
-                        subtitleView
-                        titleView
-                    } else {
-                        titleView
-                        subtitleView
-                    }
-                }
+                titleSubtitleStack
 
                 Spacer()
 
@@ -86,6 +77,33 @@ struct AppCell: View {
                 .frame(width: 52, height: 52)
                 .background(Color.lightGray)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    @ViewBuilder
+    private var titleSubtitleStack: some View {
+        if let subtitle, !subtitle.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                if isReverse {
+                    subtitleView
+                    titleView
+                } else {
+                    titleView
+                    subtitleView
+                }
+            }
+        } else if reservesSubtitleSpace {
+            ZStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 2) {
+                    titleView
+                    Text(" ").body13Regular()
+                }
+                .opacity(0)
+
+                titleView
+            }
+        } else {
+            titleView
         }
     }
 

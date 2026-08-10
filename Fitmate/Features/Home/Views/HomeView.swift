@@ -237,7 +237,7 @@ struct HomeView: View {
         case .template(let exercises):
             // Кладём выбор упражнений под экран подтверждения — «Изменить» вернёт к нему
             router.navigate(to: .exerciseSelection(mode: .workout, preselected: exercises))
-            router.navigate(to: .workoutConfirm(exercises: exercises))
+            router.navigate(to: .workoutConfirm(exercises: exercises, fromTemplate: true))
         }
     }
 

@@ -13,7 +13,7 @@ import Combine
 enum Route: Hashable {
     case profile
     case exerciseSelection(mode: ExerciseSelectionMode, preselected: [Exercise])
-    case workoutConfirm(exercises: [Exercise])
+    case workoutConfirm(exercises: [Exercise], fromTemplate: Bool)
     case workoutSession(exercises: [Exercise])
     case workoutSessionResume(workoutId: UUID)
     case workoutComplete
