@@ -20,7 +20,7 @@ final class SwiftDataExerciseCatalogRepository: ExerciseCatalogRepository {
 
     func cachedMuscleGroups() throws -> [MuscleGroupLocal] {
         let descriptor = FetchDescriptor<MuscleGroupLocal>(
-            sortBy: [SortDescriptor(\.nameRu)]
+            sortBy: [SortDescriptor(\.sortOrder)]
         )
         return try context.fetch(descriptor)
     }
@@ -32,29 +32,69 @@ final class SwiftDataExerciseCatalogRepository: ExerciseCatalogRepository {
     }
 
     private func replaceCache(with sections: [MuscleGroupSection]) throws {
-        try context.delete(model: ExerciseLocal.self)
-        try context.delete(model: MuscleGroupLocal.self)
+        let existingGroups = try context.fetch(FetchDescriptor<MuscleGroupLocal>())
+        let existingExercises = try context.fetch(FetchDescriptor<ExerciseLocal>())
 
-        for section in sections {
-            let group = MuscleGroupLocal(
-                id: section.id,
-                name: section.name,
-                nameRu: section.nameRu
-            )
-            context.insert(group)
+        var groupsById = Dictionary(existingGroups.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var exercisesById = Dictionary(existingExercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
-            for exercise in section.exercises {
-                let local = ExerciseLocal(
-                    id: exercise.id,
-                    name: exercise.name,
-                    nameRu: exercise.nameRu,
-                    subtitle: exercise.subtitle,
-                    subtitleRu: exercise.subtitleRu,
-                    imageLink: exercise.imageLink
+        var incomingGroupIds = Set<String>()
+        var incomingExerciseIds = Set<String>()
+
+        for (index, section) in sections.enumerated() {
+            incomingGroupIds.insert(section.id)
+
+            let group: MuscleGroupLocal
+            if let existing = groupsById[section.id] {
+                existing.name = section.name
+                existing.nameRu = section.nameRu
+                existing.sortOrder = index
+                group = existing
+            } else {
+                group = MuscleGroupLocal(
+                    id: section.id,
+                    name: section.name,
+                    nameRu: section.nameRu,
+                    sortOrder: index
                 )
-                local.muscleGroup = group
-                context.insert(local)
+                context.insert(group)
+                groupsById[section.id] = group
             }
+
+            for (exerciseIndex, exercise) in section.exercises.enumerated() {
+                incomingExerciseIds.insert(exercise.id)
+
+                if let existing = exercisesById[exercise.id] {
+                    existing.name = exercise.name
+                    existing.nameRu = exercise.nameRu
+                    existing.subtitle = exercise.subtitle
+                    existing.subtitleRu = exercise.subtitleRu
+                    existing.imageLink = exercise.imageLink
+                    existing.sortOrder = exerciseIndex
+                    existing.muscleGroup = group
+                } else {
+                    let local = ExerciseLocal(
+                        id: exercise.id,
+                        name: exercise.name,
+                        nameRu: exercise.nameRu,
+                        subtitle: exercise.subtitle,
+                        subtitleRu: exercise.subtitleRu,
+                        imageLink: exercise.imageLink,
+                        sortOrder: exerciseIndex
+                    )
+                    local.muscleGroup = group
+                    context.insert(local)
+                    exercisesById[exercise.id] = local
+                }
+            }
+        }
+
+        for exercise in existingExercises where !incomingExerciseIds.contains(exercise.id) {
+            context.delete(exercise)
+        }
+
+        for group in existingGroups where !incomingGroupIds.contains(group.id) {
+            context.delete(group)
         }
 
         try context.save()

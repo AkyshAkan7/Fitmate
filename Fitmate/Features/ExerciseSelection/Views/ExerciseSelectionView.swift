@@ -161,6 +161,10 @@ struct ExerciseSelectionView: View {
                     .padding(.bottom, 64)
                     .id(listTopAnchor)
                 }
+                .refreshable {
+                    let repository = AppDependencies.exerciseCatalogRepository(context: modelContext)
+                    await Task { await viewModel.load(repository: repository) }.value
+                }
                 .onChange(of: selectedMuscleGroup) { _, _ in
                     proxy.scrollTo(listTopAnchor, anchor: .top)
                 }

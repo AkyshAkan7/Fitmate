@@ -15,6 +15,7 @@ final class MuscleGroupLocal {
     @Attribute(.unique) var id: String
     var name: String
     var nameRu: String
+    var sortOrder: Int = 0
 
     @Relationship(deleteRule: .cascade, inverse: \ExerciseLocal.muscleGroup)
     var exercises: [ExerciseLocal] = []
@@ -22,11 +23,13 @@ final class MuscleGroupLocal {
     init(
         id: String,
         name: String,
-        nameRu: String
+        nameRu: String,
+        sortOrder: Int = 0
     ) {
         self.id = id
         self.name = name
         self.nameRu = nameRu
+        self.sortOrder = sortOrder
     }
 }
 
@@ -40,6 +43,7 @@ final class ExerciseLocal {
     var subtitle: String
     var subtitleRu: String
     var imageLink: String?
+    var sortOrder: Int = 0
     var muscleGroup: MuscleGroupLocal?
 
     var localizedName: String { AppLocale.isRussian ? nameRu : name }
@@ -51,7 +55,8 @@ final class ExerciseLocal {
         nameRu: String,
         subtitle: String,
         subtitleRu: String,
-        imageLink: String? = nil
+        imageLink: String? = nil,
+        sortOrder: Int = 0
     ) {
         self.id = id
         self.name = name
@@ -59,5 +64,6 @@ final class ExerciseLocal {
         self.subtitle = subtitle
         self.subtitleRu = subtitleRu
         self.imageLink = imageLink
+        self.sortOrder = sortOrder
     }
 }

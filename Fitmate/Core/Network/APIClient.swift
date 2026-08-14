@@ -83,7 +83,9 @@ final class DefaultAPIClient: APIClient {
             throw error
         } catch let error as URLError {
             #if DEBUG
-            ConsoleNetworkLogger.log(response: nil, data: nil, error: error)
+            if error.code != .cancelled {
+                ConsoleNetworkLogger.log(response: nil, data: nil, error: error)
+            }
             #endif
             throw APIError.network(error)
         } catch {

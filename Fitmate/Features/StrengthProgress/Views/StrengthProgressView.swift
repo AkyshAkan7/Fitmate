@@ -12,10 +12,10 @@ struct StrengthProgressView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var router: Router
 
-    @Query(sort: \MuscleGroupLocal.nameRu)
+    @Query(sort: \MuscleGroupLocal.sortOrder)
     private var allMuscleGroups: [MuscleGroupLocal]
 
-    @Query(sort: \ExerciseLocal.nameRu)
+    @Query(sort: \ExerciseLocal.sortOrder)
     private var allExercises: [ExerciseLocal]
 
     @Query private var workouts: [WorkoutLocal]
@@ -88,7 +88,6 @@ struct StrengthProgressView: View {
                     exerciseId: exercise.id
                 )
             }
-            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
     var body: some View {
