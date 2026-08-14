@@ -72,6 +72,7 @@ struct WorkoutHistoryDetailView: View {
                     id: UUID(),
                     name: "Жим штангой",
                     subtitle: "В наклоне",
+                    imageURL: nil,
                     dateLabel: "Понедельник, 6 апреля",
                     sets: [
                         WorkoutHistorySet(weight: 30, reps: 10),

@@ -61,15 +61,17 @@ final class ExerciseSelectionViewModel {
         for local in groups {
             let group = MuscleGroup(id: local.id, name: local.name, nameRu: local.nameRu)
             availableGroups.append(group)
-            byGroup[group] = local.exercises.map { ex in
-                Exercise(
-                    catalogId: ex.id,
-                    name: ex.localizedName,
-                    subtitle: ex.localizedSubtitle,
-                    muscleGroup: group,
-                    imageURL: ex.imageLink.flatMap { URL(string: $0) }
-                )
-            }
+            byGroup[group] = local.exercises
+                .map { ex in
+                    Exercise(
+                        catalogId: ex.id,
+                        name: ex.localizedName,
+                        subtitle: ex.localizedSubtitle,
+                        muscleGroup: group,
+                        imageURL: ex.imageLink.flatMap { URL(string: $0) }
+                    )
+                }
+                .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         }
 
         self.availableGroups = availableGroups

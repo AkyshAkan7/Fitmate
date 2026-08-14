@@ -43,9 +43,9 @@ struct MainAppView: View {
                     case .workoutHistory:
                         WorkoutHistoryView()
                     case .privacyPolicy:
-                        PrivacyPolicyView()
+                        LegalDocumentView(document: .privacyPolicy)
                     case .termsOfUse:
-                        TermsOfUseView()
+                        LegalDocumentView(document: .termsOfUse)
                     }
                 }
         }

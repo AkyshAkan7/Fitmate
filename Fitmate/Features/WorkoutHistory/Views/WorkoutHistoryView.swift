@@ -49,6 +49,7 @@ struct WorkoutHistoryItem: Identifiable, Hashable {
     let id: UUID
     let name: String
     let subtitle: String
+    let imageURL: URL?
     let dateLabel: String
     let sets: [WorkoutHistorySet]
 }
@@ -83,6 +84,7 @@ struct WorkoutHistoryView: View {
                         id: ex.id,
                         name: ex.exerciseName,
                         subtitle: ex.exerciseSubtitle,
+                        imageURL: ex.exerciseImageLink.flatMap { URL(string: $0) },
                         dateLabel: label,
                         sets: ex.sets
                             .sorted { $0.createdAt < $1.createdAt }
@@ -179,6 +181,8 @@ struct WorkoutHistoryView: View {
             VStack(spacing: 0) {
                 ForEach(items) { item in
                     AppCell(
+                        icon: Image(systemName: "dumbbell"),
+                        iconURL: item.imageURL,
                         title: item.name,
                         subtitle: item.subtitle
                     ) {

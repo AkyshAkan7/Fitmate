@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "\nи " : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\nand "
+          }
+        }
+      }
+    },
     " " : {
 
     },
@@ -61,9 +71,6 @@
           }
         }
       }
-    },
-    "•" : {
-
     },
     "0 кг x 0" : {
       "localizations" : {
@@ -142,17 +149,6 @@
         }
       }
     },
-    "Введите имя" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a name"
-          }
-        }
-      }
-    },
     "Вес" : {
       "localizations" : {
         "en" : {
@@ -182,17 +178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Su"
-          }
-        }
-      }
-    },
-    "Все" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All"
           }
         }
       }
@@ -283,16 +268,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date"
-          }
-        }
-      }
-    },
-    "Дата вступления в силу: [указать дату]" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effective date: [set date]"
           }
         }
       }
@@ -467,27 +442,6 @@
         }
       }
     },
-    "Имя" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "Используя приложение Fitmate, вы подтверждаете согласие с настоящими условиями. Если вы не согласны с ними — пожалуйста, не используйте приложение." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By using the Fitmate app, you agree to these terms. If you do not agree, please do not use the app."
-          }
-        }
-      }
-    },
     "История тренировок" : {
       "localizations" : {
         "en" : {
@@ -508,44 +462,12 @@
         }
       }
     },
-    "Контакт: shimkayev@gmail.com" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contact: shimkayev@gmail.com"
-          }
-        }
-      }
-    },
     "Между упражнениями,\nможно переключаться в\nлюбое время" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can switch between\nexercises at any time"
-          }
-        }
-      }
-    },
-    "Моё упражнение" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "My exercise"
-          }
-        }
-      }
-    },
-    "Мои" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "My"
           }
         }
       }
@@ -558,16 +480,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "My subscription"
-          }
-        }
-      }
-    },
-    "Мы уважаем вашу конфиденциальность. Ниже указано, какие данные мы собираем и как используем их в приложении Fitmate." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We respect your privacy. Below is what data we collect and how we use it in the Fitmate app."
           }
         }
       }
@@ -642,13 +554,12 @@
         }
       }
     },
-    "Не удалось войти. Попробуйте ещё раз" : {
-      "extractionState" : "stale",
+    "Не удалось загрузить документ" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couldn't sign in. Please try again"
+            "value" : "Couldn't load the document"
           }
         }
       }
@@ -813,17 +724,6 @@
         }
       }
     },
-    "Подробнее" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Learn more"
-          }
-        }
-      }
-    },
     "Подходы" : {
       "localizations" : {
         "en" : {
@@ -840,6 +740,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacy Policy"
+          }
+        }
+      }
+    },
+    "Пользовательское соглашение" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Use"
           }
         }
       }
@@ -886,6 +796,16 @@
         }
       }
     },
+    "Продолжая вы принимаете " : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By continuing you accept "
+          }
+        }
+      }
+    },
     "Профиль" : {
       "comment" : "A label for the \"Profile\" option in the navigation bar.",
       "isCommentAutoGenerated" : true,
@@ -904,16 +824,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fr"
-          }
-        }
-      }
-    },
-    "Разработчик: ИП Шимкаев (Казахстан)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Developer: IE Shimkayev (Kazakhstan)"
           }
         }
       }
@@ -1112,16 +1022,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "You can reorder\nexercises"
-          }
-        }
-      }
-    },
-    "Условия использования приложения" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terms of Use"
           }
         }
       }

@@ -90,18 +90,18 @@ struct TermsView: View {
     }
 
     private var termsText: AttributedString {
-        var text = AttributedString("Продолжая вы принимаете ")
+        var text = AttributedString(String(localized: "Продолжая вы принимаете "))
         text.foregroundColor = .appGray
 
-        var privacy = AttributedString("Политика конфиденциальности")
+        var privacy = AttributedString(String(localized: "Политика конфиденциальности"))
         privacy.foregroundColor = .appGray
         privacy.underlineStyle = .single
         privacy.link = URL(string: "fitmate://privacy")
 
-        var and = AttributedString("\nи ")
+        var and = AttributedString(String(localized: "\nи "))
         and.foregroundColor = .appGray
 
-        var terms = AttributedString("Пользовательское соглашение")
+        var terms = AttributedString(String(localized: "Пользовательское соглашение"))
         terms.foregroundColor = .appGray
         terms.underlineStyle = .single
         terms.link = URL(string: "fitmate://terms")

@@ -126,9 +126,12 @@ struct ExerciseProgressView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exerciseName)
                         .headline24Semibold()
-                    Text(exerciseSubtitle)
-                        .body15Regular()
-                        .foregroundStyle(Color.appGray)
+
+                    if !exerciseSubtitle.isEmpty {
+                        Text(exerciseSubtitle)
+                            .body15Regular()
+                            .foregroundStyle(Color.appGray)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

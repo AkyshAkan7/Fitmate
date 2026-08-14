@@ -38,6 +38,8 @@ struct ExerciseSelectionView: View {
     @State private var selectedExercise: Exercise?
     @State private var didApplyPreselection = false
 
+    private let listTopAnchor = "exerciseListTop"
+
     private var isReplaceMode: Bool {
         mode == .replace
     }
@@ -146,16 +148,22 @@ struct ExerciseSelectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
         default:
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    exerciseList
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        exerciseList
 
-                    if selectedMuscleGroup != .custom {
-                        createCustomLink
+                        if selectedMuscleGroup != .custom {
+                            createCustomLink
+                        }
                     }
+                    .padding(.top, 16)
+                    .padding(.bottom, 64)
+                    .id(listTopAnchor)
                 }
-                .padding(.top, 16)
-                .padding(.bottom, 64)
+                .onChange(of: selectedMuscleGroup) { _, _ in
+                    proxy.scrollTo(listTopAnchor, anchor: .top)
+                }
             }
         }
     }
