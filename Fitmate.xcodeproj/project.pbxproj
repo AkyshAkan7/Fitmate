@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		C7AC81402FA1E62700D52091 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = C7AC813F2FA1E62700D52091 /* Pulse */; };
-		C7AC81422FA1E62700D52091 /* PulseProxy in Frameworks */ = {isa = PBXBuildFile; productRef = C7AC81412FA1E62700D52091 /* PulseProxy */; };
-		C7AC81442FA1E62700D52091 /* PulseUI in Frameworks */ = {isa = PBXBuildFile; productRef = C7AC81432FA1E62700D52091 /* PulseUI */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		C763A1012F166AE900115E72 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -58,9 +52,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C7AC81442FA1E62700D52091 /* PulseUI in Frameworks */,
-				C7AC81402FA1E62700D52091 /* Pulse in Frameworks */,
-				C7AC81422FA1E62700D52091 /* PulseProxy in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,9 +112,6 @@
 			);
 			name = Fitmate;
 			packageProductDependencies = (
-				C7AC813F2FA1E62700D52091 /* Pulse */,
-				C7AC81412FA1E62700D52091 /* PulseProxy */,
-				C7AC81432FA1E62700D52091 /* PulseUI */,
 			);
 			productName = Fitmate;
 			productReference = C763A0F32F166AE800115E72 /* Fitmate.app */;
@@ -209,7 +197,6 @@
 			mainGroup = C763A0EA2F166AE800115E72;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				C7AC813E2FA1E62700D52091 /* XCRemoteSwiftPackageReference "Pulse" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C763A0F42F166AE800115E72 /* Products */;
@@ -425,7 +412,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -460,7 +447,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -602,35 +589,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		C7AC813E2FA1E62700D52091 /* XCRemoteSwiftPackageReference "Pulse" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/kean/Pulse";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.2.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		C7AC813F2FA1E62700D52091 /* Pulse */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C7AC813E2FA1E62700D52091 /* XCRemoteSwiftPackageReference "Pulse" */;
-			productName = Pulse;
-		};
-		C7AC81412FA1E62700D52091 /* PulseProxy */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C7AC813E2FA1E62700D52091 /* XCRemoteSwiftPackageReference "Pulse" */;
-			productName = PulseProxy;
-		};
-		C7AC81432FA1E62700D52091 /* PulseUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = C7AC813E2FA1E62700D52091 /* XCRemoteSwiftPackageReference "Pulse" */;
-			productName = PulseUI;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C763A0EB2F166AE800115E72 /* Project object */;
 }

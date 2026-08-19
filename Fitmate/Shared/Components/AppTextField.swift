@@ -53,7 +53,6 @@ struct AppTextField: View {
             }
         }
         .task {
-            // Небольшая задержка — иначе фокус не успевает примениться после push-перехода
             guard autoFocus else { return }
             try? await Task.sleep(for: .milliseconds(300))
             isFocused = true

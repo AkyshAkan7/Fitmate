@@ -57,7 +57,6 @@ struct CachedAsyncImage<Placeholder: View, Content: View>: View {
                 loadedImage = image
             }
         } catch {
-            // Тихо проваливаемся в placeholder — лог уйдёт через Pulse
         }
     }
 }

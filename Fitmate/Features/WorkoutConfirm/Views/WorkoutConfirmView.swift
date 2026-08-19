@@ -101,7 +101,8 @@ struct WorkoutConfirmView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 0).onChanged { _ in
                 if shouldShowTip { dismissTip() }
-            }
+            },
+            including: shouldShowTip ? .all : .subviews
         )
     }
 

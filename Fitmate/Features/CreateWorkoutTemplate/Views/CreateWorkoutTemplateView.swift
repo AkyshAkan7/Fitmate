@@ -13,6 +13,10 @@ struct CreateWorkoutTemplateView: View {
 
     @State private var templateName: String = ""
 
+    private var trimmedName: String {
+        templateName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
@@ -28,7 +32,8 @@ struct CreateWorkoutTemplateView: View {
 
                 Spacer()
 
-                AppButton(title: "Добавить упражнения") {
+                AppButton(title: "Добавить упражнения", isEnabled: !trimmedName.isEmpty) {
+                    hideKeyboard()
                     router.navigate(to: .exerciseSelection(mode: .template(name: templateName), preselected: []))
                 }
                 .padding(.bottom, 16)

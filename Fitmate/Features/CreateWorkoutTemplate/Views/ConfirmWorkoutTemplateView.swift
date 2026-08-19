@@ -21,6 +21,10 @@ struct ConfirmWorkoutTemplateView: View {
         _exercises = State(initialValue: exercises)
     }
 
+    private var trimmedName: String {
+        templateName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             navigationBar
@@ -108,10 +112,10 @@ struct ConfirmWorkoutTemplateView: View {
                 dismiss()
             }
 
-            AppButton(title: "Сохранить") {
+            AppButton(title: "Сохранить", isEnabled: !trimmedName.isEmpty) {
                 try? AppDependencies
                     .workoutTemplateRepository(context: modelContext)
-                    .save(name: templateName, exercises: exercises)
+                    .save(name: trimmedName, exercises: exercises)
                 router.popToRoot()
             }
         }

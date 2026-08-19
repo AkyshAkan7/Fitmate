@@ -25,6 +25,7 @@ struct HomeView: View {
 
     @State private var pendingAction: PendingStartAction?
     @State private var showActiveWorkoutAlert: Bool = false
+    @State private var templateToDelete: WorkoutTemplate?
 
     private var activeWorkout: WorkoutLocal? {
         workouts.first { $0.endedAt == nil }
@@ -162,6 +163,9 @@ struct HomeView: View {
                         },
                         onTemplateTap: { template in
                             startWorkout(.template(exercises: template.exercises))
+                        },
+                        onTemplateDelete: { template in
+                            templateToDelete = template
                         }
                     )
                     .padding(.top, 24)
@@ -195,6 +199,19 @@ struct HomeView: View {
             .keyboardShortcut(.defaultAction)
         } message: {
             Text("Хотите завершить текущую и создать новую? Все невыполненные упражнения не сохранятся")
+        }
+        .alert("Удаление", isPresented: Binding(
+            get: { templateToDelete != nil },
+            set: { if !$0 { templateToDelete = nil } }
+        )) {
+            Button("Нет", role: .cancel) {
+                templateToDelete = nil
+            }
+            Button("Да", role: .destructive) {
+                deleteTemplate()
+            }
+        } message: {
+            Text("Точно хотите удалить шаблон?")
         }
     }
 
@@ -239,6 +256,14 @@ struct HomeView: View {
             router.navigate(to: .exerciseSelection(mode: .workout, preselected: exercises))
             router.navigate(to: .workoutConfirm(exercises: exercises, fromTemplate: true))
         }
+    }
+
+    private func deleteTemplate() {
+        guard let template = templateToDelete else { return }
+        try? AppDependencies
+            .workoutTemplateRepository(context: modelContext)
+            .delete(id: template.id)
+        templateToDelete = nil
     }
 
     private func deleteActiveAndProceed() {

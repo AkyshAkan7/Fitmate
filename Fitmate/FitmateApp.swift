@@ -7,8 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import Pulse
-import PulseProxy
 
 @main
 struct FitmateApp: App {
@@ -18,14 +16,6 @@ struct FitmateApp: App {
 
     private let modelContainer = AppSchema.makeContainer()
 
-    init() {
-        #if DEBUG
-        // Свизлит URLSession и пишет все запросы (включая URLSession.shared в APIClient)
-        NetworkLogger.enableProxy()
-        RemoteLogger.shared.isAutomaticConnectionEnabled = true
-        #endif
-    }
-
     var body: some Scene {
         WindowGroup {
             MainAppView()
@@ -34,9 +24,6 @@ struct FitmateApp: App {
                 .environmentObject(router)
                 .modelContainer(modelContainer)
                 .preferredColorScheme(.light)
-            #if DEBUG
-                .pulseConsoleOnShake()
-            #endif
         }
     }
 }

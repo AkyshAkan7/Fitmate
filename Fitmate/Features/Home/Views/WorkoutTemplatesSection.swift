@@ -27,6 +27,7 @@ struct WorkoutTemplatesSection: View {
     var templates: [WorkoutTemplate] = []
     var onCreateTap: (() -> Void)? = nil
     var onTemplateTap: ((WorkoutTemplate) -> Void)? = nil
+    var onTemplateDelete: ((WorkoutTemplate) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -63,30 +64,34 @@ struct WorkoutTemplatesSection: View {
                 // Templates list
                 VStack(spacing: 0) {
                     ForEach(Array(templates.enumerated()), id: \.element.id) { index, template in
-                        Button {
-                            onTemplateTap?(template)
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(template.name)
-                                        .body15Regular()
-                                        .foregroundStyle(Color.primary)
-                                    
-                                    Text("Упражнений: \(template.exerciseCount)")
-                                        .body13Regular()
+                        SwipeToDelete {
+                            onTemplateDelete?(template)
+                        } content: {
+                            Button {
+                                onTemplateTap?(template)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(template.name)
+                                            .body15Regular()
+                                            .foregroundStyle(Color.primary)
+
+                                        Text("Упражнений: \(template.exerciseCount)")
+                                            .body13Regular()
+                                            .foregroundStyle(Color.appGray)
+                                    }
+
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .bold))
                                         .foregroundStyle(Color.appGray)
                                 }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(Color.appGray)
+                                .padding(.vertical, 12)
+                                .contentShape(Rectangle())
                             }
-                            .padding(.vertical, 12)
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .cornerRadius(16)
