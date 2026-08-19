@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
@@ -13,7 +14,10 @@ struct ProfileView: View {
     @EnvironmentObject private var router: Router
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.modelContext) private var modelContext
     @AppStorage(StorageKeys.userDisplayName) private var displayName = "Apple ID"
+
+    @State private var showDeleteAccountAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -51,6 +55,25 @@ struct ProfileView: View {
         } message: {
             Text(authManager.authErrorMessage ?? "")
         }
+        .alert("Удаление аккаунта", isPresented: $showDeleteAccountAlert) {
+            Button("Отмена", role: .cancel) {}
+            Button("Удалить", role: .destructive) {
+                Task { await deleteAccount() }
+            }
+        } message: {
+            Text("Аккаунт и все ваши тренировки будут удалены безвозвратно")
+        }
+    }
+
+    private func deleteAccount() async {
+        guard await authManager.deleteAccount() else { return }
+
+        try? modelContext.delete(model: WorkoutLocal.self)
+        try? modelContext.delete(model: WorkoutTemplateLocal.self)
+        try? modelContext.delete(model: CustomExerciseLocal.self)
+        try? modelContext.save()
+
+        dismiss()
     }
 
     // MARK: - Navigation Bar
@@ -194,8 +217,8 @@ struct ProfileView: View {
                 authManager.signOut()
             }
 
-            AppButton(title: "Удалить аккаунт", type: .destructive) {
-                // TODO: Delete account
+            AppButton(title: "Удалить аккаунт", type: .destructive, isEnabled: !authManager.isDeletingAccount) {
+                showDeleteAccountAlert = true
             }
         }
     }

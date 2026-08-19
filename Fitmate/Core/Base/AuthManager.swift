@@ -13,6 +13,7 @@ import AuthenticationServices
 final class AuthManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var isSigningIn = false
+    @Published var isDeletingAccount = false
     @Published var authErrorMessage: String?
 
     private let authService: AuthService
@@ -57,7 +58,25 @@ final class AuthManager: ObservableObject {
 
     func signOut() {
         authService.signOut()
+        UserDefaults.standard.removeObject(forKey: StorageKeys.userDisplayName)
         isAuthenticated = false
+    }
+
+    func deleteAccount() async -> Bool {
+        guard !isDeletingAccount else { return false }
+        isDeletingAccount = true
+        authErrorMessage = nil
+        defer { isDeletingAccount = false }
+
+        do {
+            try await authService.deleteAccount()
+            UserDefaults.standard.removeObject(forKey: StorageKeys.userDisplayName)
+            isAuthenticated = false
+            return true
+        } catch {
+            authErrorMessage = "Не удалось удалить аккаунт. Попробуйте ещё раз"
+            return false
+        }
     }
 
     private func saveDisplayNameIfNeeded(_ name: PersonNameComponents?) {

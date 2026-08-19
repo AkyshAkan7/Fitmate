@@ -11,6 +11,7 @@ protocol AuthService: Sendable {
     var isAuthenticated: Bool { get }
     func signInWithApple(identityToken: String) async throws
     func signOut()
+    func deleteAccount() async throws
 }
 
 final class DefaultAuthService: AuthService {
@@ -36,31 +37,46 @@ final class DefaultAuthService: AuthService {
     func signOut() {
         tokenStorage.clear()
     }
+
+    func deleteAccount() async throws {
+        try await client.send(AuthEndpoint.deleteAccount)
+        tokenStorage.clear()
+    }
 }
 
 // MARK: - Endpoints
 
 private enum AuthEndpoint: Endpoint {
     case apple(identityToken: String)
+    case deleteAccount
 
     var path: String {
         switch self {
         case .apple: "/auth/apple"
+        case .deleteAccount: "/user"
         }
     }
 
     var method: HTTPMethod {
         switch self {
         case .apple: .post
+        case .deleteAccount: .delete
         }
     }
 
-    var requiresAuth: Bool { false }
+    var requiresAuth: Bool {
+        switch self {
+        case .apple: false
+        case .deleteAccount: true
+        }
+    }
 
     var body: (any Encodable)? {
         switch self {
         case .apple(let identityToken):
             AppleSignInRequest(identityToken: identityToken)
+        case .deleteAccount:
+            nil
         }
     }
 }
