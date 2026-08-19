@@ -5,6 +5,7 @@
 //  Created by Akan Akysh on 05/08/26.
 //
 
+#if DEBUG
 import Foundation
 
 final class ConsoleNetworkLogger {
@@ -100,3 +101,4 @@ final class ConsoleNetworkLogger {
         return prettyString
     }
 }
+#endif

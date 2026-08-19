@@ -258,7 +258,9 @@ struct WorkoutSessionView: View {
         do {
             try modelContext.save()
         } catch {
+            #if DEBUG
             print("Persist failed: \(error)")
+            #endif
         }
     }
 
