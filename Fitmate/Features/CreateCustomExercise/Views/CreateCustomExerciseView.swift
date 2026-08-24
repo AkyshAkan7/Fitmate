@@ -38,7 +38,8 @@ struct CreateCustomExerciseView: View {
                     title: "Название",
                     caption: isDuplicate
                         ? "Такое упражнение уже есть"
-                        : "Например: Тяга в горизонтальном блоке"
+                        : "Например: Тяга в горизонтальном блоке",
+                    autoFocus: true
                 )
                 .padding(.top, 16)
 

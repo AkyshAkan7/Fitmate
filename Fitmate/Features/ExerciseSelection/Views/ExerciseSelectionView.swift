@@ -37,6 +37,7 @@ struct ExerciseSelectionView: View {
     @State private var selectedExercises: [String] = []
     @State private var selectedExercise: Exercise?
     @State private var didApplyPreselection = false
+    @State private var exerciseToDelete: Exercise?
 
     private let listTopAnchor = "exerciseListTop"
 
@@ -111,11 +112,27 @@ struct ExerciseSelectionView: View {
                 selectedMuscleGroup = first
             }
         }
-        // Switch to "My" tab when a new custom exercise is added
+        // Switch to "My" tab when a new custom exercise is added,
+        // switch away from it once the last one is deleted
         .onChange(of: customModels.count) { oldCount, newCount in
             if newCount > oldCount {
                 selectedMuscleGroup = .custom
+            } else if newCount == 0, selectedMuscleGroup == .custom, let first = viewModel.availableGroups.first {
+                selectedMuscleGroup = first
             }
+        }
+        .alert("Удаление", isPresented: Binding(
+            get: { exerciseToDelete != nil },
+            set: { if !$0 { exerciseToDelete = nil } }
+        )) {
+            Button("Нет", role: .cancel) {
+                exerciseToDelete = nil
+            }
+            Button("Да", role: .destructive) {
+                deleteExercise()
+            }
+        } message: {
+            Text("Точно хотите удалить упражнение?")
         }
     }
 
@@ -209,15 +226,27 @@ struct ExerciseSelectionView: View {
     private var exerciseList: some View {
         VStack(spacing: 0) {
             ForEach(filteredExercises) { exercise in
-                AppCellControl(
-                    iconURL: exercise.imageURL,
-                    title: exercise.name,
-                    subtitle: exercise.subtitle,
-                    style: isReplaceMode ? .radio : .checkbox,
-                    isSelected: isSelectedBinding(for: exercise)
-                )
+                if selectedMuscleGroup == .custom {
+                    SwipeToDelete {
+                        exerciseToDelete = exercise
+                    } content: {
+                        exerciseRow(for: exercise)
+                    }
+                } else {
+                    exerciseRow(for: exercise)
+                }
             }
         }
+    }
+
+    private func exerciseRow(for exercise: Exercise) -> some View {
+        AppCellControl(
+            iconURL: exercise.imageURL,
+            title: exercise.name,
+            subtitle: exercise.subtitle,
+            style: isReplaceMode ? .radio : .checkbox,
+            isSelected: isSelectedBinding(for: exercise)
+        )
     }
 
     private func isSelectedBinding(for exercise: Exercise) -> Binding<Bool> {
@@ -246,6 +275,16 @@ struct ExerciseSelectionView: View {
         } else {
             selectedExercises.removeAll { $0 == key }
         }
+    }
+
+    private func deleteExercise() {
+        guard let exercise = exerciseToDelete else { return }
+        try? AppDependencies.customExerciseRepository(context: modelContext).delete(id: exercise.id)
+        selectedExercises.removeAll { $0 == selectionKey(exercise) }
+        if selectedExercise?.id == exercise.id {
+            selectedExercise = nil
+        }
+        exerciseToDelete = nil
     }
 
     private func applyPreselectionIfNeeded() {
