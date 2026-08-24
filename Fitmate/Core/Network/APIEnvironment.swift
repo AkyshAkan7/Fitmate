@@ -16,12 +16,12 @@ enum APIEnvironment {
         case .development:
             URL(string: "https://fitmate-develop.share-prompt.org")!
         case .production:
-            URL(string: "https://fitmate-develop.share-prompt.org")!
+            URL(string: "https://fitmate-prod.share-prompt.org")!
         }
     }
 
     static let current: APIEnvironment = {
-        #if DEBUG
+        #if APP_ENV_DEV
         .development
         #else
         .production
