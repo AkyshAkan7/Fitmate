@@ -17,18 +17,21 @@ final class CustomExerciseLocal {
     var subtitle: String
     var imageLink: String?
     var createdAt: Date
+    var synced: Bool
 
     init(
         id: UUID = UUID(),
         name: String,
         subtitle: String,
         imageLink: String? = nil,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        synced: Bool = false
     ) {
         self.id = id
         self.name = name
         self.subtitle = subtitle
         self.imageLink = imageLink
         self.createdAt = createdAt
+        self.synced = synced
     }
 }

@@ -10,6 +10,7 @@ import Foundation
 @MainActor
 protocol CustomExerciseRepository: Sendable {
     func all() throws -> [CustomExerciseLocal]
-    func save(name: String) throws
+    func save(name: String) async throws
     func delete(id: UUID) throws
+    func syncPending() async
 }

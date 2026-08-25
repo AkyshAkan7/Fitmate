@@ -126,11 +126,7 @@ struct WorkoutConfirmView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
                 Button {
-                    if fromTemplate {
-                        router.popToRoot()
-                    } else {
-                        dismiss()
-                    }
+                    dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 20, weight: .medium))
@@ -165,7 +161,11 @@ struct WorkoutConfirmView: View {
     private var bottomButtons: some View {
         HStack(spacing: 8) {
             AppButton(title: "Изменить", type: .secondary) {
-                dismiss()
+                if fromTemplate {
+                    router.replaceStack(with: .exerciseSelection(mode: .workout, preselected: exercises))
+                } else {
+                    dismiss()
+                }
             }
 
             AppButton(title: "Начать") {

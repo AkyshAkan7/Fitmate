@@ -44,8 +44,9 @@ final class AuthManager: ObservableObject {
                 throw ASAuthorizationError(.invalidResponse)
             }
 
-            // Apple передаёт имя только при первом входе — сохраняем сразу
+            // Apple передаёт имя и email только при первом входе — сохраняем сразу
             saveDisplayNameIfNeeded(credential.fullName)
+            saveEmailIfNeeded(credential.email)
 
             try await authService.signInWithApple(identityToken: identityToken)
             isAuthenticated = true
@@ -58,7 +59,9 @@ final class AuthManager: ObservableObject {
 
     func signOut() {
         authService.signOut()
-        UserDefaults.standard.removeObject(forKey: StorageKeys.userDisplayName)
+        // Имя/email не чистим: Apple присылает их только один раз за всю
+        // историю связки Team ID + бандл — при повторном входе тем же
+        // Apple ID они больше не придут, и надпись деградирует навсегда.
         isAuthenticated = false
     }
 
@@ -71,6 +74,7 @@ final class AuthManager: ObservableObject {
         do {
             try await authService.deleteAccount()
             UserDefaults.standard.removeObject(forKey: StorageKeys.userDisplayName)
+        UserDefaults.standard.removeObject(forKey: StorageKeys.userEmail)
             isAuthenticated = false
             return true
         } catch {
@@ -84,5 +88,10 @@ final class AuthManager: ObservableObject {
         let displayName = PersonNameComponentsFormatter.localizedString(from: name, style: .default)
         guard !displayName.isEmpty else { return }
         UserDefaults.standard.set(displayName, forKey: StorageKeys.userDisplayName)
+    }
+
+    private func saveEmailIfNeeded(_ email: String?) {
+        guard let email, !email.isEmpty else { return }
+        UserDefaults.standard.set(email, forKey: StorageKeys.userEmail)
     }
 }

@@ -46,10 +46,12 @@ struct CreateCustomExerciseView: View {
                 Spacer()
 
                 AppButton(title: "Добавить", isEnabled: !trimmedName.isEmpty && !isDuplicate) {
-                    try? AppDependencies
-                        .customExerciseRepository(context: modelContext)
-                        .save(name: trimmedName)
-                    dismiss()
+                    Task {
+                        try? await AppDependencies
+                            .customExerciseRepository(context: modelContext)
+                            .save(name: trimmedName)
+                        dismiss()
+                    }
                 }
                 .padding(.bottom, 16)
             }

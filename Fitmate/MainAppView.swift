@@ -10,7 +10,9 @@ import SwiftUI
 struct MainAppView: View {
     @EnvironmentObject private var languageManager: LanguageManager
     @EnvironmentObject private var router: Router
-    
+    @EnvironmentObject private var authManager: AuthManager
+    @Environment(\.modelContext) private var modelContext
+
     var body: some View {
         NavigationStack(path: $router.path) {
             HomeView()
@@ -50,6 +52,17 @@ struct MainAppView: View {
                 }
         }
         .environment(\.locale, Locale(identifier: languageManager.currentLanguage.id))
+        .task {
+            if authManager.isAuthenticated {
+                await AppDependencies.customExerciseRepository(context: modelContext).syncPending()
+            }
+        }
+        .onChange(of: authManager.isAuthenticated) { _, isAuthenticated in
+            guard isAuthenticated else { return }
+            Task {
+                await AppDependencies.customExerciseRepository(context: modelContext).syncPending()
+            }
+        }
     }
 }
 

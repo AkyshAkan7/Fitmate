@@ -15,9 +15,16 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
-    @AppStorage(StorageKeys.userDisplayName) private var displayName = "Apple ID"
+    @AppStorage(StorageKeys.userDisplayName) private var displayName = ""
+    @AppStorage(StorageKeys.userEmail) private var userEmail = ""
 
     @State private var showDeleteAccountAlert = false
+
+    private var accountLabel: String {
+        if !displayName.isEmpty { return displayName }
+        if !userEmail.isEmpty { return userEmail }
+        return "Пользователь Fitmate"
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -145,7 +152,7 @@ struct ProfileView: View {
                 Text("Аккаунт")
                     .body13Regular()
                     .foregroundStyle(Color.appGray)
-                Text(displayName)
+                Text(accountLabel)
                     .body15Regular()
                     .foregroundStyle(Color.appBlack)
             }

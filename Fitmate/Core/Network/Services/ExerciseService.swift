@@ -9,6 +9,7 @@ import Foundation
 
 protocol ExerciseService: Sendable {
     func fetchMuscleGroups() async throws -> [MuscleGroupSection]
+    func createCustomExercise(nameRu: String, name: String, imageLink: String) async throws
 }
 
 final class DefaultExerciseService: ExerciseService {
@@ -22,16 +23,50 @@ final class DefaultExerciseService: ExerciseService {
         let dtos: [MuscleGroupDTO] = try await client.send(ExerciseEndpoint.list)
         return dtos.map(\.toDomain)
     }
+
+    func createCustomExercise(nameRu: String, name: String, imageLink: String) async throws {
+        try await client.send(ExerciseEndpoint.create(name: name, nameRu: nameRu, imageLink: imageLink))
+    }
 }
 
 // MARK: - Endpoints
 
 private enum ExerciseEndpoint: Endpoint {
     case list
+    case create(name: String, nameRu: String, imageLink: String)
 
     var path: String { "/exercises" }
-    var method: HTTPMethod { .get }
-    var requiresAuth: Bool { false }
+
+    var method: HTTPMethod {
+        switch self {
+        case .list: .get
+        case .create: .post
+        }
+    }
+
+    var requiresAuth: Bool {
+        switch self {
+        case .list: false
+        case .create: true
+        }
+    }
+
+    var body: (any Encodable)? {
+        switch self {
+        case .list:
+            nil
+        case .create(let name, let nameRu, let imageLink):
+            CreateExerciseRequest(name: name, nameRu: nameRu, imageLink: imageLink)
+        }
+    }
+}
+
+// MARK: - Create Exercise Request
+
+private struct CreateExerciseRequest: Encodable {
+    let name: String
+    let nameRu: String
+    let imageLink: String
 }
 
 // MARK: - DTO

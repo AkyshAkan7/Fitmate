@@ -14,4 +14,6 @@ enum StorageKeys {
     static let hasSeenSwitchTip = "hasSeenSwitchTip"
     static let hasSeenReplaceTip = "hasSeenReplaceTip"
     static let userDisplayName = "userDisplayName"
+    static let userEmail = "userEmail"
+    static let deletedCustomExerciseNames = "deletedCustomExerciseNames"
 }
